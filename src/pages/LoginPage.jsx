@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
 
@@ -6,6 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -19,7 +21,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      alert('Login successful!');
+      navigate('/dashboard');
       // TODO: redirect to dashboard
     }
   }

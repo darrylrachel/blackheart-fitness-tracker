@@ -7,8 +7,13 @@ export default function  DashboardPage() {
   const navigate = useNavigate();
 
   async function handleLogout() {
-    await supabase.auth.signout();
-    navigate('/login');
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      navigate('/login');
+    } else {
+      console.error('Logout failed:', error.message);
+    }
+    
   }
 
 

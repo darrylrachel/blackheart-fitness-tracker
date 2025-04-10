@@ -41,7 +41,25 @@ export default function Sidebar() {
             `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
             }`
           }>
-            Progress
+            Journal
+        </NavLink>
+
+        <NavLink
+          to="/progress"
+          className={({ isActive }) => 
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
+            }`
+          }>
+            Coach
+        </NavLink>
+
+        <NavLink
+          to="https://blackheartlabs.com/" // progress
+          className={({ isActive }) => 
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
+            }`
+          }>
+            Shop
         </NavLink>
         
       </nav>

@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import DashboardLayout from '../components/DashboardLayout';
 import ProtectedRoute from '../components/ProtectedRoute';
+import StartWorkoutPage from '../pages/StartWorkoutPage';
 import DashboardPage from '../pages/DashboardPage';
 import NutritionPage from '../pages/NutritionPage';
 import WorkoutsPage from '../pages/WorkoutsPage';
@@ -51,6 +52,16 @@ const router = createBrowserRouter ([
         </DashboardLayout>
       </ProtectedRoute>
     ),
+  },
+  {
+    path: '/workouts/start',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <StartWorkoutPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
   },
 ]);
 

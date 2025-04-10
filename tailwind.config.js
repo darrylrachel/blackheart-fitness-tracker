@@ -15,6 +15,7 @@ export default {
         accent: '#6366f1',
         success: '#10b981',
         border: '#e5e7eb',
+        error: '#e74c3c',
       },
     },
   },

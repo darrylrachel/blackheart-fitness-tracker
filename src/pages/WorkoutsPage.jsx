@@ -1,10 +1,14 @@
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
 export default function WorkoutPage() {
+  const navigate = useNavigate();
+
   return (
     <div className='space-y-6'>
       <h1 className="text-textPrimary text-2xl font-bold">Your Workouts</h1>
-      <Button variant='primary'>Start New Workout</Button>
+      <Button variant='primary' onClick={() => navigate('/workouts/start')}>
+          Start New Workout</Button>
 
       <div className='bg-surface rounded-lg p-4 shadow-md mt-4'>
         <h2 className='text-lg font-semibold mb-2 text-darkBlue'>Recent</h2>

@@ -96,7 +96,11 @@ export default function StartWorkoutPage() {
   }
 
     return (
+      
       <div className='space-y-6'>
+        <Button variant="secondary" onClick={() => navigate('/workouts')}>
+          ← Back to Workouts
+        </Button>
         <h1 className='text-2xl font-bold text-textPrimary'>Start a New Workout</h1>
 
         {!selectedWorkout ? (

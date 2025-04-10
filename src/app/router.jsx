@@ -1,9 +1,13 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import LoginPage from '../pages/LoginPage';
-import SignupPage from '../pages/SignupPage';
-import DashboardPage from '../pages/DashboardPage';
 import DashboardLayout from '../components/DashboardLayout';
 import ProtectedRoute from '../components/ProtectedRoute';
+import DashboardPage from '../pages/DashboardPage';
+import NutritionPage from '../pages/NutritionPage';
+import WorkoutsPage from '../pages/WorkoutsPage';
+import SignupPage from '../pages/SignupPage';
+import LoginPage from '../pages/LoginPage';
+
+
 
 const router = createBrowserRouter ([
   {
@@ -24,6 +28,26 @@ const router = createBrowserRouter ([
       <ProtectedRoute>
         <DashboardLayout>
           <DashboardPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/workouts',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <WorkoutsPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/nutrition',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <NutritionPage />
         </DashboardLayout>
       </ProtectedRoute>
     ),

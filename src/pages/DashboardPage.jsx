@@ -35,8 +35,8 @@ export default function  DashboardPage() {
         />
       </div>
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-        <GoalDonut label='Calories' value={1480} total={2200} color='#e74c3c' />
-        <GoalDonut label='Steps' value={7345} total={10000} color='#27ae60' />
+        <GoalDonut label='Calories Today' value={1480} total={2200} color='#e74c3c' />
+        <GoalDonut label='Steps Today' value={7345} total={10000} color='#27ae60' />
         <GoalDonut label='Workouts This Week' value={3} total={5} color='#e2c3e50' />
       </div>
       {/* <ProgressChart /> */}

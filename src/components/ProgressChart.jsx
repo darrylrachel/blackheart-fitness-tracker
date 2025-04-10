@@ -17,8 +17,8 @@ const mockData = [
 
 export default function ProgressChart({ data = mockData }) {
   return (
-    <div className='bg-white p-6 rounded-xl shadow-md'>
-      <h2 className='text-lg font-bold mb-4 text-darkBlue'>Weight Loss</h2>
+    <div className='bg-dark p-6 rounded-xl shadow-md'>
+      <h2 className='text-lg font-bold mb-4 text-dark'>Weight Loss</h2>
       <ResponsiveContainer width='100%' height={250}>
         <LineChart data={data}>
           <CartesianGrid stroke='#eee' strokeDasharray='5 5' />

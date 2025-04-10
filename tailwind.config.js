@@ -8,11 +8,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        darkBlue: '#2c3e50',
-        slate: '#34495e',
-        green: '#27ae60',
-        red: '#e74c3c',
+        primary: '#bfa85d', // darkBlue: '#2c3e50',
+        primaryDark: '#a48f4e',
+        dark: '#282829',  // slate: '#34495e',
+        balticSea: '#3d3d3d',
+        gray: '#7a7a7a',  // green: '#27ae60',
+        flat: '#171a21',
+        light: '#f4f1e6',  // 
         lightGray: '#ecf0f1',
+        red: '#e74c3c',
+        brand: '#bfa85d',
       },
     },
   },

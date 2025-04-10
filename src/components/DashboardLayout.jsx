@@ -3,7 +3,7 @@ import Topbar from './Topbar';
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className='flex min-h-screen bg-light text-dark'>
+    <div className='flex min-h-screen bg-white text-dark'>
       {/* Sidebar */}
       <Sidebar />
 

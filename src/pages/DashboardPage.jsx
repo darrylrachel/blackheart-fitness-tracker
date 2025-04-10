@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import { Dumbbell, Flame, CalendarHeart } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import ProgressChart from '../components/ProgressChart';
+import GoalDonut from '../components/GoalDonut';
 
 export default function  DashboardPage() {
   
@@ -33,7 +34,12 @@ export default function  DashboardPage() {
           iconBg='bg-green'
         />
       </div>
-      <ProgressChart />
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <GoalDonut label='Calories' value={1480} total={2200} color='#e74c3c' />
+        <GoalDonut label='Steps' value={7345} total={10000} color='#27ae60' />
+        <GoalDonut label='Workouts This Week' value={3} total={5} color='#e2c3e50' />
+      </div>
+      {/* <ProgressChart /> */}
     </div>
   )
 }

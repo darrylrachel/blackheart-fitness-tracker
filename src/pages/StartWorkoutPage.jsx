@@ -1,5 +1,9 @@
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/supabase';
 import { useState, useEffect } from 'react';
 import Button from '../components/Button';
+
+
 
 const mockWorkouts = [
   {
@@ -61,6 +65,34 @@ export default function StartWorkoutPage() {
     const updated = { ...setData };
     updated[exerciseIndex][setIndex][field] = value;
     setSetData(updated);
+  }
+
+  const navigate = useNavigate();
+
+  async function handleFinishWorkout() {
+    const { data: user } = await supabase.auth.getUser();
+
+    if(!user || !user.user) {
+      alert('User not found!');
+      return;
+    }
+
+    const { error } = await supabase.from('workouts').insert([
+      {
+        user_id: user.user.id,
+        name: selectedWorkout.name,
+        muscles: selectedWorkout.muscles,
+        exercises: JSON.stringify(setData),
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      alert('Failed to save workout.');
+    } else {
+      alert('Workout saved');
+      navigate('/workouts'); // or redirect to summary page
+    }
   }
 
     return (
@@ -132,7 +164,7 @@ export default function StartWorkoutPage() {
                 </ul>
               </div>
             )}
-            <Button onClick={handleStart}>Begin Workout</Button>
+            <Button onClick={handleFinishWorkout}>Finish Workout</Button>
           </div>
         )}
       </div>

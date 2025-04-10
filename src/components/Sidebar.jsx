@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
   return (
-    <aside className="bg-dark text-light w-64 min-h-screen flex flex-col shadow-lg">
+    <aside className="bg-surface text-Primary w-64 min-h-screen flex flex-col shadow-lg">
       <div className="text-center p-6 text-2xl font-bold border-b border-slate">
         <span className="text-brand">Blackheart</span> Coach
       </div>
@@ -11,7 +11,7 @@ export default function Sidebar() {
         <NavLink
           to="/dashboard"
           className={({ isActive }) => 
-            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-green text-white' : 'text-lightGray'
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
             }`
           }>
             Dashboard
@@ -20,7 +20,7 @@ export default function Sidebar() {
         <NavLink
           to="/workouts"
           className={({ isActive }) => 
-            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-green text-white' : 'text-lightGray'
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
             }`
           }>
             Workouts
@@ -29,7 +29,7 @@ export default function Sidebar() {
         <NavLink
           to="/nutrition"
           className={({ isActive }) => 
-            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-green text-white' : 'text-lightGray'
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
             }`
           }>
             Nutrition
@@ -38,7 +38,7 @@ export default function Sidebar() {
         <NavLink
           to="/progress"
           className={({ isActive }) => 
-            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-green text-white' : 'text-lightGray'
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
             }`
           }>
             Progress

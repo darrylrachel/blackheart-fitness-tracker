@@ -13,8 +13,8 @@ export default function Topbar() {
   }
 
   return (
-    <header className='bg-dark border-b border-slate px-6 py-4 flex items-center justify-between shadow-sm'>
-      <div className='text-lg font-bold text-dark'>Dashboard</div>
+    <header className='bg-surface border-b border-border px-6 py-4 flex items-center justify-between shadow-sm'>
+      <div className='text-lg font-bold text-textPrimary'>Dashboard</div>
 
       <div className='flex items-center gap-4'>
         <Button variant='danger' onClick={handleLogout}>

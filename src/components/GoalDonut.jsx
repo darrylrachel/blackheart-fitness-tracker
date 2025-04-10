@@ -29,8 +29,8 @@ export default function GoalDonut({ label, value, total, color = '#27ae60' }) {
       transition={{duration: 0.4}}
       whileHover={{ scale: 1.02 }}
     >
-      <div className='bg-white p-6 rounded-xl shadow-md text-center space-y-2'>
-        <div className='flex justify-center items-center gap-2 text-darkBlue font-semiBold text-lg'>
+      <div className='bg-surface p-6 rounded-xl shadow-md text-center space-y-2'>
+        <div className='flex justify-center items-center gap-2 text-textPrimary font-semiBold text-lg'>
           {ICONS[label]} {label}
         </div>
         {/* <h3 className='text-dark font-bold text-lg'>{label}</h3> */}
@@ -50,9 +50,9 @@ export default function GoalDonut({ label, value, total, color = '#27ae60' }) {
             <Tooltip />
           </PieChart>
         </ResponsiveContainer>
-        <p className='text-gray text-sm'>
+        <div className='text-sm text-textSecondary'>
           {value} of {total} ({percentage}%)
-        </p>
+        </div>
       </div>
     </motion.div>
   )

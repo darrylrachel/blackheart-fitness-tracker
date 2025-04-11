@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import UserMenu from './UserMenu';
 
 export default function Sidebar() {
   return (
@@ -7,6 +8,7 @@ export default function Sidebar() {
         <span className="text-brand">Blackheart</span> Coach
       </div>
 
+      {/* NavLink Items */}
       <nav className="flex-1 px-4 py-6 space-y-4 text-sm">
         <NavLink
           to="/dashboard"
@@ -63,6 +65,9 @@ export default function Sidebar() {
         </NavLink>
         
       </nav>
+
+      {/* User Menu */}
+      <UserMenu />
     </aside>
   )
 }

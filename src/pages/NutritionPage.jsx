@@ -9,18 +9,21 @@ export default function NutritionPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [log, setLog] = useState([]);
+  const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(false);
 
   const totals = log.reduce(
     (acc, food) => {
-      acc.calories += food.nf_calories || 0;
-      acc.protein += food.nf_protein || 0;
-      acc.carbs += food.nf_total_carbohydrate || 0;
-      acc.fats += food.nf_total_fat || 0;
+      const qty = food.quantity || 1;
+      acc.calories += (food.nf_calories || 0) * qty;
+      acc.protein += (food.nf_protein || 0) * qty;
+      acc.carbs += (food.nf_total_carbohydrate || 0) * qty;
+      acc.fats += (food.nf_total_fat || 0) * qty;
       return acc;
     },
     { calories: 0, protein: 0, carbs: 0, fats: 0 }
   );
+
 
   async function searchFood() {
     if (!query.trim()) return;
@@ -79,14 +82,49 @@ export default function NutritionPage() {
       {results.length > 0 && (
         <div className='space-y-4'>
           <h2 className="text-lg font-semibold text-textPrimary">Search Results</h2>
-          {results.map((item, i) => (
-            <div key={i} className="p-4 bg-surface rounded shadow text-sm space-y-1">
-              <p><strong>{item.food_name}</strong> ({item.serving_qty} {item.serving_unit})</p>
-              <p>Calories: {item.nf_calories}</p>
-              <p>Protein: {item.nf_protein}g • Carbs: {item.nf_total_carbohydrate}g • Fats: {item.nf_total_fat}g</p>
-              <Button onClick={() => addToLog(item)} variant="secondary">➕ Add to Log</Button>
-            </div>
-          ))}
+          {results.map((item, i) => {
+  const quantity = quantities[i] || 1;
+
+  // Calculate adjusted macros
+  const adjusted = {
+    calories: (item.nf_calories * quantity).toFixed(0),
+    protein: (item.nf_protein * quantity).toFixed(1),
+    carbs: (item.nf_total_carbohydrate * quantity).toFixed(1),
+    fats: (item.nf_total_fat * quantity).toFixed(1),
+  };
+
+  return (
+    <div key={i} className="p-4 bg-surface rounded shadow text-sm space-y-1">
+      <p><strong>{item.food_name}</strong> ({item.serving_qty} {item.serving_unit})</p>
+
+      <div className="flex items-center gap-2 mb-2">
+        <label htmlFor={`qty-${i}`} className="text-sm">Qty:</label>
+        <input
+          id={`qty-${i}`}
+          type="number"
+          min="0.1"
+          step="0.1"
+          value={quantity}
+          onChange={(e) =>
+            setQuantities({ ...quantities, [i]: parseFloat(e.target.value) || 1 })
+          }
+          className="w-20 p-1 rounded border border-border bg-background text-sm"
+        />
+        <span className="text-xs text-textSecondary">servings of {item.serving_unit}</span>
+      </div>
+
+      <p>Calories: {adjusted.calories}</p>
+      <p>
+        Protein: {adjusted.protein}g • Carbs: {adjusted.carbs}g • Fats: {adjusted.fats}g
+      </p>
+
+      <Button onClick={() => addToLog({ ...item, quantity })} variant="secondary">
+        ➕ Add {quantity} Serving{quantity !== 1 ? 's' : ''}
+      </Button>
+    </div>
+  );
+})}
+
         </div>
       )}
 

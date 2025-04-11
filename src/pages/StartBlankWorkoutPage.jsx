@@ -1,3 +1,4 @@
+import { getNextSetRecommendation } from '../utils/getNextSetRecommendation';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
@@ -81,6 +82,31 @@ export default function StartBlankWorkoutPage() {
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  }
+
+  async function fetchPreviousSetData(exerciseName) {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('user_workouts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return null;
+
+    for (const workout of data) {
+      const exercises = typeof workout.exercises === 'string'
+        ? JSON.parse(workout.exercises)
+        : workout.exercises;
+
+      const match = exercises.find(ex => ex.name.toLowerCase() === exerciseName.toLowerCase());
+      if (match) return match.sets;
+    }
+
+    return null;
   }
 
 
@@ -169,7 +195,7 @@ export default function StartBlankWorkoutPage() {
               <div className='flex justify-between items-center'>
                 <h4 className='text-md font-semibold text-textPrimary'>
                   {toTitleCase(exercise.name)}
-                  {firstSet?.weight && (
+                  {exercise.hasRecommendation && firstSet?.weight && (
                     <div className='text-sm text-green-600 italic mb-2'>
                       💬 Coach Tip: Start with {firstSet.reps} reps at {firstSet.weight} lbs
                     </div>
@@ -190,14 +216,34 @@ export default function StartBlankWorkoutPage() {
                 <li
                   key={idx}
                   className="cursor-pointer hover:bg-surface p-2 rounded"
-                  onClick={() => {
+                  onClick={async () => {
                     updateExerciseName(exIndex, ex.name);
                     updateExerciseSearch(exIndex, '');
                     setSearchResultsByIndex((prev) => ({
                       ...prev,
                       [exIndex]: []
                     }));
+
+                    const previousSets = await fetchPreviousSetData(ex.name);
+
+                    if (previousSets) {
+                      const suggestedSets = previousSets.map((prevSet) => {
+                        const recommendation = getNextSetRecommendation(prevSet, { min: 8, max: 12 });
+                        return {
+                          reps: `${recommendation.repsRange.min}-${recommendation.repsRange.max}`,
+                          weight: recommendation.weight || '',
+                          notes: '',
+                          complete: false
+                        };
+                      });
+
+                      const updated = [...exercises];
+                      updated[exIndex].sets = suggestedSets;
+                      updated[exIndex].hasRecommendation = true; // ✅ flag for Coach Tip
+                      setExercises(updated);
+                    }
                   }}
+
                 >
                   {ex.name}
                 </li>

@@ -58,6 +58,7 @@ export default function NutritionPage() {
   async function addToLog(food) {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
+    console.log(user.id);
     if (!user) {
       alert('Not logged in!');
       return;

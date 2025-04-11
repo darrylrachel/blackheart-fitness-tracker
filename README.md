@@ -1,6 +1,7 @@
 # Pocket Fitness Coach (PWA)
 
 A personal trainer in your pocket – track workouts, get custom plans, track progress, and stay consistent.
+##blackheartcoach.app##
 
 ### Features (MVP)
 

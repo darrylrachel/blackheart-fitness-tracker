@@ -12,7 +12,7 @@ export default {
         surface: '#ffffff',
         textPrimary: '#1f2937',
         textSecondary: '#6b7280',
-        accent: '#6366f1',
+        accent: '#282829', // #6366f1
         success: '#10b981',
         border: '#e5e7eb',
         error: '#e74c3c',

@@ -10,6 +10,18 @@ export default function WorkoutPage() {
       <Button variant='primary' onClick={() => navigate('/workouts/start')}>
           Start New Workout</Button>
 
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+        <Button variant='primary' onClick={() => alert('Coming soon: Pre-Built Program')}>
+          🗂️ Pre-Built Programs
+        </Button>
+        <Button variant='secondary' onClick={() => alert('Coming soon: Build your own Program')}>
+          🧱 Build Your Own
+        </Button>
+        <Button variant='secondary' onClick={() => alert('Coming soon: Generate Random Workout')}>
+          🎲 Generate Random Workout
+        </Button>
+      </div>
+
       <div className='bg-surface rounded-lg p-4 shadow-md mt-4'>
         <h2 className='text-lg font-semibold mb-2 text-darkBlue'>Recent</h2>
         <ul className='text-textSecondary text-sm space-y-2'>

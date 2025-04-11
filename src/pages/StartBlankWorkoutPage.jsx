@@ -13,10 +13,25 @@ export default function StartBlankWorkoutPage() {
   
 
   function addExercise() {
-    setExercises([...exercises, {
-      name: '',
-      sets: [{ reps: ''}],
-    }]);
+    setExercises([
+      ...exercises, 
+      {
+        name: '',
+        sets: [{ reps: ''}],
+      }
+    ]);
+  }
+
+  function removeExercise(index) {
+    const updated = [...exercises];
+    updated.splice(index, 1);
+    setExercises(updated);
+  }
+
+  function removeSet(exerciseIndex, setIndex) {
+    const updated = [...exercises];
+    updated[exerciseIndex].sets.splice(setIndex, 1);
+    setExercises(updated);
   }
 
   function addSet(exerciseIndex) {
@@ -76,14 +91,6 @@ export default function StartBlankWorkoutPage() {
 
       {exercises.map((exercise, exIndex) => (
         <div key={exIndex} className='bg-surface p-4 rounded shadow-md space-y-4'>
-          {/* <input 
-            type='text'
-            placeholder='Exercise name'
-            value={exercise.name}
-            onChange={(e) => updateExerciseName(exIndex, e.target.value)}
-            className='w-full p-2 rounded border border-border bg-background text-textPrimary'
-          /> */}
-
           <input
             type="text"
             placeholder="Search exercises"
@@ -91,6 +98,20 @@ export default function StartBlankWorkoutPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full p-2 rounded border border-border bg-background text-textPrimary"
           />
+
+          {exercise.name && (
+            <div className='flex justify-between items-center'>
+              <h4 className='text-md font-semibold text-textPrimary'>
+                Selected: {exercise.name}
+              </h4>
+              <button
+                onClick={() => removeExercise(exIndex)}
+                className='text-sm text-red hover:underline'
+              >
+                Remove
+              </button>
+            </div>
+          )}
 
             <ul className="mt-2 space-y-1 text-sm text-textSecondary">
               {loading && <li>Loading...</li>}
@@ -119,6 +140,12 @@ export default function StartBlankWorkoutPage() {
                 onChange={(e) => updateSetsReps(exIndex, setIndex, e.target.value)}
                 className='p-2 rounded border border-border bg-background text-sm w-24'
               />
+              <button
+                onClick={() => removeSet(exIndex, setIndex)}
+                className='text-xs text-red hover:underline'
+              >
+                Remove
+              </button>
             </div>
           ))}
 
@@ -128,13 +155,20 @@ export default function StartBlankWorkoutPage() {
         </div>
       ))}
 
-          <Button variant='primary' onClick={addExercise}>
-            ➕ Add Exercise
-          </Button>
+      <Button variant="secondary" onClick={() => navigate('/workouts')}>
+        ❌ Cancel Workout
+      </Button>
 
-          <Button variant='primary' onClick={handleSavedWorkout}>
-            💾 Finish and Save
-          </Button>
+
+          <div className='flex flex-col sm:flex-row gap-4'>
+            <Button variant='primary' onClick={addExercise}>
+              ➕ Add Exercise
+            </Button>
+
+            <Button variant='primary' onClick={handleSavedWorkout}>
+              💾 Finish and Save
+            </Button>
+          </div>
     </div>
   );
 }

@@ -5,13 +5,16 @@ export default function useExcersiceSearch(query = '') {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if(!query) return;
+    if(!query) {
+      setExcercises([]);
+      return;
+    }
 
     const fetchExercises = async () => {
       setLoading(true);
 
       try {
-        const res = await fetch(`https://exercisedb.p.rapidapi.com/exercises/name/${query}`, {
+        const res = await fetch(`https://exercisedb.p.rapidapi.com/exercises/name/${query.toLocaleLowerCase()}`, {
           method: 'GET',
           headers: {
             'X-RapidAPI-Key': import.meta.env.VITE_RAPIDAPI_KEY,

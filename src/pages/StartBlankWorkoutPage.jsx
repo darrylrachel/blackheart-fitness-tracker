@@ -1,4 +1,6 @@
-import useExcersiceSearch from '../hooks/useExerciseSearch';
+import useExerciseSearch from '../hooks/useExerciseSearch';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/supabase';
 import Button from '..//components/Button';
 import { useState } from "react";
 
@@ -6,7 +8,9 @@ export default function StartBlankWorkoutPage() {
   const [workoutName, setWorkoutName] = useState('');
   const [exercises, setExercises] = useState([]);
   const [search, setSearch] = useState('');
-  const { exercises: searchResults, loading } = useExcersiceSearch(search);
+  const { exercises: searchResults, loading } = useExerciseSearch(search);
+  const navigate = useNavigate();
+  
 
   function addExercise() {
     setExercises([...exercises, {
@@ -31,6 +35,31 @@ export default function StartBlankWorkoutPage() {
     const updated = [...exercises];
     updated[exIndex].sets[setIndex].reps = reps;
     setExercises(updated)
+  }
+
+  async function handleSavedWorkout() {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+
+    if (!user) {
+      alert('User not found');
+      return;
+    }
+
+    const { error } = await supabase.from('user_workouts').insert([
+      {
+        user_id: user.id,
+        name: workoutName,
+        exercises: exercises // JSONB in supabase
+      },
+    ]);
+
+    if (error) {
+      console.error('Failed to save workout');
+    } else {
+      alert('Workout saved!');
+      navigate('/workouts');
+    }
   }
 
   return (
@@ -103,7 +132,7 @@ export default function StartBlankWorkoutPage() {
             ➕ Add Exercise
           </Button>
 
-          <Button variant='primary' onClick={() => console.log({ workoutName, exercises })}>
+          <Button variant='primary' onClick={handleSavedWorkout}>
             💾 Finish and Save
           </Button>
     </div>

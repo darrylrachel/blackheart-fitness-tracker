@@ -1,4 +1,5 @@
 import ProgramProgressDonut from '../components/ProgramProgressDonut';
+import MetricDonut from '../components/MetricDonut';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
@@ -23,11 +24,32 @@ export default function WorkoutPage() {
         </Button>
       </div>
 
-      <ProgramProgressDonut 
-        name='Push/Pull/Legs'
-        currentDay={12}
-        totalDays={42}
-      />
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <ProgramProgressDonut 
+          name='Push/Pull/Legs'
+          currentDay={12}
+          totalDays={42}
+        />
+
+        <MetricDonut
+          label='Strength Progress'
+          value={75} // maybe 75% of a 1RM target
+          total={100}
+          color='#10b981'
+        />
+
+        <MetricDonut
+          label='Workout Consistency'
+          value={9} // 9 workouts dont this month
+          total={12} // 12 expected
+          color='#f59e0b'
+        />
+
+      </div>
+
+      <Button onClick={() => navigate('/program')}>
+        View Program
+      </Button>
 
       <div className='bg-surface rounded-lg p-4 shadow-md mt-4'>
         <h2 className='text-lg font-semibold mb-2 text-darkBlue'>Recent</h2>

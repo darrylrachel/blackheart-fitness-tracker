@@ -7,6 +7,7 @@ import NutritionPage from '../pages/NutritionPage';
 import WorkoutsPage from '../pages/WorkoutsPage';
 import SettingsPage from '../pages/SettingsPage';
 import ProfilePage from '../pages/ProfilePage';
+import ProgramPage from '../pages/ProgramPage';
 import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
 
@@ -61,6 +62,16 @@ const router = createBrowserRouter ([
       <ProtectedRoute>
         <DashboardLayout>
           <StartWorkoutPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/program',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <ProgramPage />
         </DashboardLayout>
       </ProtectedRoute>
     )

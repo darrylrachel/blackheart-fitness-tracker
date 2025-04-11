@@ -81,13 +81,38 @@ export default function WorkoutPage() {
         ) : workouts.length === 0 ? (
           <p className='text-sm text-textSecondary'>No workouts logged yet.</p>
         ) : (
-          <ul className='text-textSecondary text-sm space-y-2'>
-            {workouts.slice(0, 5).map((workout) => (
-              <li key={workout.id}>
-                ✅ {new Date(workout.created_at).toLocaleDateString()} — {workout.name}
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-4">
+            {workouts.slice(0, 5).map((workout) => {
+              const exercises = typeof workout.exercises === 'string'
+                ? JSON.parse(workout.exercises)
+                : workout.exercises;
+
+              return (
+                <div key={workout.id} className="bg-background p-4 rounded shadow space-y-2">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-textPrimary text-md">{workout.name}</h3>
+                    <span className="text-xs text-gray">
+                      {new Date(workout.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {exercises.map((exercise, i) => (
+                    <div key={i}>
+                      <p className="font-medium text-textPrimary mt-2">{exercise.name}</p>
+                      {exercise.sets.map((set, j) => (
+                        <p key={j} className="text-sm text-textSecondary ml-2">
+                          Set {j + 1}: {set.reps} reps @ {set.weight} lbs
+                          {set.complete ? ' ✅' : ' ❌'}
+                          {set.notes && ` — Notes: ${set.notes}`}
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
         )}
       </div>
     </div>

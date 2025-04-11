@@ -76,6 +76,14 @@ export default function StartBlankWorkoutPage() {
     setExercises(updated);
   }
 
+  function toTitleCase(str) {
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+
 
   async function handleSearch(query, index) {
     if (!query.trim()) {
@@ -157,13 +165,13 @@ export default function StartBlankWorkoutPage() {
           {exercise.name && (
             <div className='flex justify-between items-center'>
               <h4 className='text-md font-semibold text-textPrimary'>
-                Selected: {exercise.name}
+                {toTitleCase(exercise.name)}
               </h4>
               <button
                 onClick={() => removeExercise(exIndex)}
                 className='text-sm text-red hover:underline'
               >
-                Remove
+                Remove Exercise
               </button>
             </div>
           )}
@@ -190,7 +198,7 @@ export default function StartBlankWorkoutPage() {
 
           {exercise.sets.map((set, setIndex) => (
             <div key={setIndex} className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-            <span className="text-sm text-gray w-14">Set {setIndex + 1}</span>
+            <span className="text-sm text-gray w-14"><strong>Set {setIndex + 1}</strong></span>
 
             <input
               type="number"
@@ -232,7 +240,7 @@ export default function StartBlankWorkoutPage() {
               onClick={() => removeSet(exIndex, setIndex)}
               className="text-xs text-red hover:underline"
             >
-              Remove
+              Clear
             </button>
           </div>
 

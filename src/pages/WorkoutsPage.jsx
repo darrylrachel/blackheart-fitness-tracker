@@ -1,3 +1,4 @@
+import ProgramProgressDonut from '../components/ProgramProgressDonut';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
@@ -21,6 +22,12 @@ export default function WorkoutPage() {
           🎲 Generate Random Workout
         </Button>
       </div>
+
+      <ProgramProgressDonut 
+        name='Push/Pull/Legs'
+        currentDay={12}
+        totalDays={42}
+      />
 
       <div className='bg-surface rounded-lg p-4 shadow-md mt-4'>
         <h2 className='text-lg font-semibold mb-2 text-darkBlue'>Recent</h2>

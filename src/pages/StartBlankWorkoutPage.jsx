@@ -1,9 +1,12 @@
+import useExcersiceSearch from '../hooks/useExerciseSearch';
 import Button from '..//components/Button';
 import { useState } from "react";
 
 export default function StartBlankWorkoutPage() {
-  const [workoutName, setWorkoutName] = useState();
-  const [exercises, setExercises] = useState();
+  const [workoutName, setWorkoutName] = useState('');
+  const [exercises, setExercises] = useState([]);
+  const [search, setSearch] = useState('');
+  const { exercises: searchResults, loading } = useExcersiceSearch(search);
 
   function addExercise() {
     setExercises([...exercises, {
@@ -44,13 +47,38 @@ export default function StartBlankWorkoutPage() {
 
       {exercises.map((exercise, exIndex) => (
         <div key={exIndex} className='bg-surface p-4 rounded shadow-md space-y-4'>
-          <input 
+          {/* <input 
             type='text'
             placeholder='Exercise name'
             value={exercise.name}
             onChange={(e) => updateExerciseName(exIndex, e.target.value)}
             className='w-full p-2 rounded border border-border bg-background text-textPrimary'
+          /> */}
+
+          <input
+            type="text"
+            placeholder="Search exercises"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full p-2 rounded border border-border bg-background text-textPrimary"
           />
+
+            <ul className="mt-2 space-y-1 text-sm text-textSecondary">
+              {loading && <li>Loading...</li>}
+              {searchResults.map((ex, idx) => (
+                <li
+                  key={idx}
+                  className="cursor-pointer hover:bg-surface p-2 rounded"
+                  onClick={() => {
+                    updateExerciseName(exIndex, ex.name);
+                    setSearch(''); // reset after select
+                  }}
+                >
+                  {ex.name}
+                </li>
+              ))}
+            </ul>
+
 
           {exercise.sets.map((set, setIndex) => (
             <div key={setIndex} className='flex items-center gap-4'>

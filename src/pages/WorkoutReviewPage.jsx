@@ -58,7 +58,8 @@ export default function WorkoutReviewPage() {
           <h2 className="font-semibold text-textPrimary">{exercise.name}</h2>
           {exercise.sets.map((set, j) => (
             <div key={j} className="text-sm text-textSecondary">
-              Set {j + 1}: {set.reps} reps
+              Set {j + 1}: {set.reps} reps @ {set.weight} lbs
+              {set.complete ? ' ✅' : ' ❌'}
               {set.notes && <> — Notes: {set.notes}</>}
             </div>
           ))}

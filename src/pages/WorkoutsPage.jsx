@@ -1,10 +1,33 @@
 import ProgramProgressDonut from '../components/ProgramProgressDonut';
 import MetricDonut from '../components/MetricDonut';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
 
 export default function WorkoutPage() {
   const navigate = useNavigate();
+  const [workouts, setWorkouts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWorkouts = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_workouts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false});
+
+      if (!error) setWorkouts(data);
+        setLoading(false);
+    };
+
+    fetchWorkouts();
+  })
 
   return (
     <div className='space-y-6'>
@@ -53,11 +76,19 @@ export default function WorkoutPage() {
 
       <div className='bg-surface rounded-lg p-4 shadow-md mt-4'>
         <h2 className='text-lg font-semibold mb-2 text-darkBlue'>Recent</h2>
-        <ul className='text-textSecondary text-sm space-y-2'>
-          <li>✅ Apr 8 - Push Day (Chest, Shoulders, Triceps)</li>
-          <li>✅ Apr 6 - Legs</li>
-          <li>✅ Apr 4 - Pull Day (Back, Biceps)</li>
-        </ul>
+        {loading ? (
+          <p className='text-sm text-textSecondary'>Loading...</p>
+        ) : workouts.length === 0 ? (
+          <p className='text-sm text-textSecondary'>No workouts logged yet.</p>
+        ) : (
+          <ul className='text-textSecondary text-sm space-y-2'>
+            {workouts.slice(0, 5).map((workout) => (
+              <li key={workout.id}>
+                ✅ {new Date(workout.created_at).toLocaleDateString()} — {workout.name}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

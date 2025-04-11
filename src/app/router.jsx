@@ -12,6 +12,7 @@ import ProfilePage from '../pages/ProfilePage';
 import ProgramPage from '../pages/ProgramPage';
 import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
+import ProgressPage from "../pages/ProgressPage";
 
 
 
@@ -78,16 +79,16 @@ const router = createBrowserRouter ([
       </ProtectedRoute>
     ),
   },
-  // {
-  //   path: '/workouts/start',
-  //   element: (
-  //     <ProtectedRoute>
-  //       <DashboardLayout>
-  //         <StartWorkoutPage />
-  //       </DashboardLayout>
-  //     </ProtectedRoute>
-  //   )
-  // },
+  {
+    path: '/progress',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <ProgressPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  },
   {
     path: '/program',
     element: (

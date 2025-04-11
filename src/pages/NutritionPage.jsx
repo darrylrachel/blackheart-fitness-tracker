@@ -101,15 +101,17 @@ export default function NutritionPage() {
         <label htmlFor={`qty-${i}`} className="text-sm">Qty:</label>
         <input
           id={`qty-${i}`}
-          type="number"
-          min="0.1"
-          step="0.1"
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*"
           value={quantity}
           onChange={(e) =>
             setQuantities({ ...quantities, [i]: parseFloat(e.target.value) || 1 })
           }
-          className="w-20 p-1 rounded border border-border bg-background text-sm"
+          placeholder="1"
+          className="w-28 p-2 rounded border border-border bg-background text-sm"
         />
+
         <span className="text-xs text-textSecondary">servings of {item.serving_unit}</span>
       </div>
 

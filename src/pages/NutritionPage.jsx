@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import GoalDonut from '../components/GoalDonut';
 import Button from '../components/Button';
+import { supabase } from '../utils/supabase';
 import { Flame, Drumstick, EggFried, Leaf } from 'lucide-react';
 
 const API_URL = 'https://trackapi.nutritionix.com/v2/natural/nutrients';
@@ -11,7 +12,7 @@ export default function NutritionPage() {
   const [log, setLog] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState('Lunch'); // default meal
+  const [selectedMeal, setSelectedMeal] = useState('Breakfast'); // default meal
 
   const totals = log.reduce(
     (acc, food) => {
@@ -54,11 +55,41 @@ export default function NutritionPage() {
     setLoading(false);
   }
 
-  function addToLog(food) {
-    setLog([...log, { ...food, meal: selectedMeal }]);
-    setResults([]);
-    setQuery('');
+  async function addToLog(food) {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) {
+      alert('Not logged in!');
+      return;
+    }
+
+    const quantity = parseFloat(food.quantity) || 1;
+
+    const { error } = await supabase.from('nutrition_logs').insert([
+      {
+        user_id: user.id,
+        date: new Date().toISOString().split('T')[0],
+        meal: food.meal,
+        food_name: food.food_name,
+        serving_unit: food.serving_unit,
+        quantity,
+        calories: (food.nf_calories || 0) * quantity,
+        protein: (food.nf_protein || 0) * quantity,
+        carbs: (food.nf_total_carbohydrate || 0) * quantity,
+        fats: (food.nf_total_fat || 0) * quantity,
+      }
+    ]);
+
+    if (error) {
+      console.error('Error saving to Supabase:', error);
+      alert('Failed to save meal');
+    } else {
+      setLog([...log, { ...food, quantity }]);
+      setResults([]);
+      setQuery('');
+    }
   }
+
 
 
 

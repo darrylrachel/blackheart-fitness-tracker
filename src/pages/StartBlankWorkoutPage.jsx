@@ -17,7 +17,7 @@ export default function StartBlankWorkoutPage() {
       {
         name: '',
         search: '',
-        sets: [{ reps: '', notes: '' }],
+        sets: [{ weight: '', reps: '', notes: '' }],
       }
     ]);
   }
@@ -63,6 +63,19 @@ export default function StartBlankWorkoutPage() {
     updated[exIndex].sets[setIndex].notes = note;
     setExercises(updated);
   }
+
+  function updateSetWeight(exIndex, setIndex, weight) {
+    const updated = [...exercises];
+    updated[exIndex].sets[setIndex].weight = weight;
+    setExercises(updated);
+  }
+
+  function updateSetComplete(exIndex, setIndex, checked) {
+    const updated = [...exercises];
+    updated[exIndex].sets[setIndex].complete = checked;
+    setExercises(updated);
+  }
+
 
   async function handleSearch(query, index) {
     if (!query.trim()) {
@@ -176,29 +189,53 @@ export default function StartBlankWorkoutPage() {
           </ul>
 
           {exercise.sets.map((set, setIndex) => (
-            <div key={setIndex} className='flex items-center gap-4'>
-              <span className='text-sm text-gray w-14'>Set {setIndex + 1}</span>
-              <input
-                type='number'
-                placeholder='Reps'
-                value={set.reps}
-                onChange={(e) => updateSetsReps(exIndex, setIndex, e.target.value)}
-                className='p-2 rounded border border-border bg-background text-sm w-24'
-              />
-              <input
-                type='text'
-                placeholder='Notes'
-                value={set.notes}
-                onChange={(e) => updateSetNotes(exIndex, setIndex, e.target.value)}
-                className='p-2 rounded border border-border bg-background text-sm flex-1'
-              />
-              <button
-                onClick={() => removeSet(exIndex, setIndex)}
-                className='text-xs text-red hover:underline'
-              >
-                Remove
-              </button>
-            </div>
+            <div key={setIndex} className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+            <span className="text-sm text-gray w-14">Set {setIndex + 1}</span>
+
+            <input
+              type="number"
+              placeholder="Weight"
+              value={set.weight}
+              onChange={(e) => updateSetWeight(exIndex, setIndex, e.target.value)}
+              className="p-2 rounded border border-border bg-background text-sm w-24"
+            />
+            
+            
+            <input
+              type="number"
+              placeholder="Reps"
+              value={set.reps}
+              onChange={(e) => updateSetsReps(exIndex, setIndex, e.target.value)}
+              className="p-2 rounded border border-border bg-background text-sm w-20"
+            />
+
+            <label className='flex items-center gap-1 text-sm text-textSecondary cursor-pointer'>
+            <input
+              type="checkbox"
+              checked={set.complete}
+              onChange={(e) => updateSetComplete(exIndex, setIndex, e.target.checked)}
+              className="w-4 h-4"
+            />
+              Complete
+            </label>
+
+
+            <input
+              type="text"
+              placeholder="Notes"
+              value={set.notes}
+              onChange={(e) => updateSetNotes(exIndex, setIndex, e.target.value)}
+              className="p-2 rounded border border-border bg-background text-sm flex-1 min-w-[180px]"
+            />
+
+            <button
+              onClick={() => removeSet(exIndex, setIndex)}
+              className="text-xs text-red hover:underline"
+            >
+              Remove
+            </button>
+          </div>
+
           ))}
 
           <Button variant='secondary' onClick={() => addSet(exIndex)}>

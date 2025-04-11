@@ -180,8 +180,10 @@ export default function StartBlankWorkoutPage() {
               ➕ Add Exercise
             </Button>
 
-            <Button variant='primary' onClick={handleSavedWorkout}>
-              💾 Finish and Save
+            <Button variant='primary' onClick={() => navigate('/workouts/review', {
+              state: { workoutName, exercises }
+            })}>
+              💾 Review and Save
             </Button>
           </div>
     </div>

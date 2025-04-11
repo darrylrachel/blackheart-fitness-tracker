@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import StartBlankWorkoutPage from "../pages/StartBlankWorkoutPage";
 import DashboardLayout from '../components/DashboardLayout';
+import WorkoutReviewPage from '../pages/WorkoutReviewPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import StartWorkoutPage from '../pages/StartWorkoutPage';
 import DashboardPage from '../pages/DashboardPage';
@@ -53,6 +54,16 @@ const router = createBrowserRouter ([
       <ProtectedRoute>
         <DashboardLayout>
           <StartBlankWorkoutPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/workouts/review',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <WorkoutReviewPage />
         </DashboardLayout>
       </ProtectedRoute>
     ),

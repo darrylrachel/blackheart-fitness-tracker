@@ -179,7 +179,7 @@ export default function NutritionPage() {
         Protein: {adjusted.protein}g • Carbs: {adjusted.carbs}g • Fats: {adjusted.fats}g
       </p>
 
-      <Button onClick={() => addToLog({ ...item, quantity })} variant="secondary">
+      <Button onClick={() => addToLog({ ...item, quantity, meal: selectedMeal })} variant="secondary">
         ➕ Add {quantity} Serving{quantity !== 1 ? 's' : ''}
       </Button>
     </div>

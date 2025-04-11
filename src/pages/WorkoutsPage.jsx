@@ -9,7 +9,7 @@ export default function WorkoutPage() {
   return (
     <div className='space-y-6'>
       <h1 className="text-textPrimary text-2xl font-bold">Your Workouts</h1>
-      <Button variant='primary' onClick={() => navigate('/workouts/start')}>
+      <Button variant='primary' onClick={() => navigate('/workouts/new')}>
           Start New Workout</Button>
 
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>

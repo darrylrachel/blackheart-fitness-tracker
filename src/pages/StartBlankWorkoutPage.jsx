@@ -17,7 +17,7 @@ export default function StartBlankWorkoutPage() {
       ...exercises, 
       {
         name: '',
-        sets: [{ reps: ''}],
+        sets: [{ reps: '', notes: ''}],
       }
     ]);
   }
@@ -36,7 +36,7 @@ export default function StartBlankWorkoutPage() {
 
   function addSet(exerciseIndex) {
     const updated = [...exercises];
-    updated[exerciseIndex].sets.push({ reps: ''});
+    updated[exerciseIndex].sets.push({ reps: '', notes: ''});
     setExercises(updated);
   }
 
@@ -50,6 +50,12 @@ export default function StartBlankWorkoutPage() {
     const updated = [...exercises];
     updated[exIndex].sets[setIndex].reps = reps;
     setExercises(updated)
+  }
+
+  function updateSetNotes(exIndex, setIndex, note) {
+    const updated = [...exercises];
+    updated[exIndex].sets[setIndex].notes = note;
+    setExercises(updated);
   }
 
   async function handleSavedWorkout() {
@@ -139,6 +145,15 @@ export default function StartBlankWorkoutPage() {
                 value={set.reps}
                 onChange={(e) => updateSetsReps(exIndex, setIndex, e.target.value)}
                 className='p-2 rounded border border-border bg-background text-sm w-24'
+              />
+              <input 
+                type='text'
+                placeholder='Notes'
+                value={set.notes}
+                onChange={(e) =>
+                  updateSetNotes(exIndex, setIndex, e.target.value)
+                }
+                className='p-2 rounded border border-border bg-background text-sm flex-1'
               />
               <button
                 onClick={() => removeSet(exIndex, setIndex)}

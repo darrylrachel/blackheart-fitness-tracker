@@ -2,6 +2,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import { supabase } from "../utils/supabase";
 
+function toTitleCase(str) {
+  return str
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+
 export default function WorkoutReviewPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,7 +63,7 @@ export default function WorkoutReviewPage() {
           key={i}
           className="bg-surface p-4 rounded shadow-md space-y-2"
         >
-          <h2 className="font-semibold text-textPrimary">{exercise.name}</h2>
+          <h2 className="font-semibold text-textPrimary">{toTitleCase(exercise.name)}</h2>
           {exercise.sets.map((set, j) => (
             <div key={j} className="text-sm text-textSecondary">
               Set {j + 1}: {set.reps} reps @ {set.weight} lbs

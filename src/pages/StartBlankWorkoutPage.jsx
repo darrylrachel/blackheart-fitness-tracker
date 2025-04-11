@@ -149,108 +149,118 @@ export default function StartBlankWorkoutPage() {
         className='w-full p-2 rounded border border-border bg-surface text-textPrimary'
       />
 
-      {exercises.map((exercise, exIndex) => (
-        <div key={exIndex} className='bg-surface p-4 rounded shadow-md space-y-4'>
-          <input
-            type="text"
-            placeholder="Search exercises"
-            value={exercise.search}
-            onChange={(e) => {
-              updateExerciseSearch(exIndex, e.target.value);
-              handleSearch(e.target.value, exIndex);
-            }}
-            className="w-full p-2 rounded border border-border bg-background text-textPrimary"
-          />
-
-          {exercise.name && (
-            <div className='flex justify-between items-center'>
-              <h4 className='text-md font-semibold text-textPrimary'>
-                {toTitleCase(exercise.name)}
-              </h4>
-              <button
-                onClick={() => removeExercise(exIndex)}
-                className='text-sm text-red hover:underline'
-              >
-                Remove Exercise
-              </button>
-            </div>
-          )}
-
-          <ul className="mt-2 space-y-1 text-sm text-textSecondary">
-            {loadingIndex === exIndex && <li>Loading...</li>}
-            {searchResultsByIndex[exIndex]?.map((ex, idx) => (
-              <li
-                key={idx}
-                className="cursor-pointer hover:bg-surface p-2 rounded"
-                onClick={() => {
-                  updateExerciseName(exIndex, ex.name);
-                  updateExerciseSearch(exIndex, '');
-                  setSearchResultsByIndex((prev) => ({
-                    ...prev,
-                    [exIndex]: []
-                  }));
-                }}
-              >
-                {ex.name}
-              </li>
-            ))}
-          </ul>
-
-          {exercise.sets.map((set, setIndex) => (
-            <div key={setIndex} className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-            <span className="text-sm text-gray w-14"><strong>Set {setIndex + 1}</strong></span>
-
-            <input
-              type="number"
-              placeholder="Weight"
-              value={set.weight}
-              onChange={(e) => updateSetWeight(exIndex, setIndex, e.target.value)}
-              className="p-2 rounded border border-border bg-background text-sm w-24"
-            />
-            
-            
-            <input
-              type="number"
-              placeholder="Reps"
-              value={set.reps}
-              onChange={(e) => updateSetsReps(exIndex, setIndex, e.target.value)}
-              className="p-2 rounded border border-border bg-background text-sm w-20"
-            />
-
-            <label className='flex items-center gap-1 text-sm text-textSecondary cursor-pointer'>
-            <input
-              type="checkbox"
-              checked={set.complete}
-              onChange={(e) => updateSetComplete(exIndex, setIndex, e.target.checked)}
-              className="w-4 h-4"
-            />
-              Complete
-            </label>
-
-
+      {exercises.map((exercise, exIndex) => {
+        const firstSet = exercise.sets?.[0];
+        return (
+        
+          <div key={exIndex} className='bg-surface p-4 rounded shadow-md space-y-4'>
             <input
               type="text"
-              placeholder="Notes"
-              value={set.notes}
-              onChange={(e) => updateSetNotes(exIndex, setIndex, e.target.value)}
-              className="p-2 rounded border border-border bg-background text-sm flex-1 min-w-[180px]"
+              placeholder="Search exercises"
+              value={exercise.search}
+              onChange={(e) => {
+                updateExerciseSearch(exIndex, e.target.value);
+                handleSearch(e.target.value, exIndex);
+              }}
+              className="w-full p-2 rounded border border-border bg-background text-textPrimary"
             />
 
-            <button
-              onClick={() => removeSet(exIndex, setIndex)}
-              className="text-xs text-red hover:underline"
-            >
-              Clear
-            </button>
+            {exercise.name && (
+              <div className='flex justify-between items-center'>
+                <h4 className='text-md font-semibold text-textPrimary'>
+                  {toTitleCase(exercise.name)}
+                  {firstSet?.weight && (
+                    <div className='text-sm text-green-600 italic mb-2'>
+                      💬 Coach Tip: Start with {firstSet.reps} reps at {firstSet.weight} lbs
+                    </div>
+                  )}
+                </h4>
+                <button
+                  onClick={() => removeExercise(exIndex)}
+                  className='text-sm text-red hover:underline'
+                >
+                  Remove Exercise
+                </button>
+              </div>
+            )}
+
+            <ul className="mt-2 space-y-1 text-sm text-textSecondary">
+              {loadingIndex === exIndex && <li>Loading...</li>}
+              {searchResultsByIndex[exIndex]?.map((ex, idx) => (
+                <li
+                  key={idx}
+                  className="cursor-pointer hover:bg-surface p-2 rounded"
+                  onClick={() => {
+                    updateExerciseName(exIndex, ex.name);
+                    updateExerciseSearch(exIndex, '');
+                    setSearchResultsByIndex((prev) => ({
+                      ...prev,
+                      [exIndex]: []
+                    }));
+                  }}
+                >
+                  {ex.name}
+                </li>
+              ))}
+            </ul>
+
+            
+            {exercise.sets.map((set, setIndex) => (
+              <div key={setIndex} className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+              <span className="text-sm text-gray w-14"><strong>Set {setIndex + 1}</strong></span>
+
+              <input
+                type="number"
+                placeholder="Weight"
+                value={set.weight}
+                onChange={(e) => updateSetWeight(exIndex, setIndex, e.target.value)}
+                className="p-2 rounded border border-border bg-background text-sm w-24"
+              />
+              
+              
+              <input
+                type="number"
+                placeholder="Reps"
+                value={set.reps}
+                onChange={(e) => updateSetsReps(exIndex, setIndex, e.target.value)}
+                className="p-2 rounded border border-border bg-background text-sm w-20"
+              />
+
+              <label className='flex items-center gap-1 text-sm text-textSecondary cursor-pointer'>
+              <input
+                type="checkbox"
+                checked={set.complete}
+                onChange={(e) => updateSetComplete(exIndex, setIndex, e.target.checked)}
+                className="w-4 h-4"
+              />
+                Complete
+              </label>
+
+
+              <input
+                type="text"
+                placeholder="Notes"
+                value={set.notes}
+                onChange={(e) => updateSetNotes(exIndex, setIndex, e.target.value)}
+                className="p-2 rounded border border-border bg-background text-sm flex-1 min-w-[180px]"
+              />
+
+              <button
+                onClick={() => removeSet(exIndex, setIndex)}
+                className="text-xs text-red hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+
+            ))}
+
+            <Button variant='secondary' onClick={() => addSet(exIndex)}>
+              ➕ Add Set
+            </Button>
           </div>
-
-          ))}
-
-          <Button variant='secondary' onClick={() => addSet(exIndex)}>
-            ➕ Add Set
-          </Button>
-        </div>
-      ))}
+        );
+      })}
 
       <Button variant="secondary" onClick={() => navigate('/workouts')}>
         ❌ Cancel Workout

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { useState, useEffect } from 'react';
+import { getNextSetRecommendation } from '../utils/getNextSetRecommendation';
 import Button from '../components/Button';
 
 
@@ -42,23 +43,73 @@ const mockWorkouts = [
 export default function StartWorkoutPage() {
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [setData, setSetData] = useState({});
-  useEffect(() => {
-    if (!selectedWorkout) return;
 
-    const initialData = {};
+  useEffect(() => {
+  if (!selectedWorkout) return;
+
+  const generateSmartData = async () => {
+    const recommendations = await getSmartData(selectedWorkout);
+    const fallbackData = {};
+
     selectedWorkout.exercises.forEach((ex, i) => {
-      initialData[i] = Array.from({ length: ex.sets }, () => ({
+      fallbackData[i] = Array.from({ length: ex.sets }, () => ({
         reps: '',
         weight: '',
         complete: false,
       }));
     });
-    setSetData(initialData);
-  }, [selectedWorkout]);
+
+    setSetData(recommendations || fallbackData);
+  };
+
+  generateSmartData();
+}, [selectedWorkout]);
+
 
   function handleStart() {
     console.log('Workout started:', selectedWorkout);
     // Late: save to supabase, redirect to workout tracker
+  }
+
+  async function getSmartData(workout) {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) return {};
+
+    const { data, error } = await supabase
+      .from('user_workouts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false});
+
+      if (error || !data || data.length === 0) return {};
+
+      const latestWorkout = data.find(w => w.exercises && w.name === workout.name);
+      if (!latestWorkout) return {};
+
+      const prevExercises = typeof latestWorkout.exercises === 'string'
+      ? JSON.parse(latestWorkout.exercises)
+      : latestWorkout.exercises;
+
+      const recommendationData = {};
+
+      workout.exercises.forEach((ex, i) => {
+        const prevSets = prevExercises[i];
+        const sets = [];
+
+        for (let s = 0; s < ex.sets; s++) {
+          const prevSet = prevSets?.[s];
+          const next = getNextSetRecommendation(prevSet || {}, { min: 8, max: 12});
+          sets.push({
+            reps: `${next.repsRange.min}-${next.repsRange.max}`,
+            weight: next.weight || '',
+            complete: false,
+          });
+        }
+        recommendationData[i] = sets;
+      });
+
+      return recommendationData;
   }
 
   function updateSet(exerciseIndex, setIndex, field, value) {

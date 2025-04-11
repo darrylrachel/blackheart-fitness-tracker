@@ -78,16 +78,16 @@ const router = createBrowserRouter ([
       </ProtectedRoute>
     ),
   },
-  {
-    path: '/workouts/start',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <StartWorkoutPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  },
+  // {
+  //   path: '/workouts/start',
+  //   element: (
+  //     <ProtectedRoute>
+  //       <DashboardLayout>
+  //         <StartWorkoutPage />
+  //       </DashboardLayout>
+  //     </ProtectedRoute>
+  //   )
+  // },
   {
     path: '/program',
     element: (

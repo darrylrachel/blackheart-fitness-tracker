@@ -2,17 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
 
-export default function ProfilePage() {
-  const [profile, setProfile] = useState({
-    weight_unit: 'lbs',
-    water_unit: 'oz',
-    macro_goal: 'maintenance',
-    gender: '',
-    age: '',
-    height: '',
-    target_weight: ''
-  });
-
+export default function EditProfilePage() {
+  const [profile, setProfile] = useState({ username: '', weight_unit: 'lbs', water_unit: 'oz', macro_goal: '' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +16,7 @@ export default function ProfilePage() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (data) setProfile(data);
       setLoading(false);
@@ -34,116 +25,81 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
-  const handleChange = (field, value) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSave = async () => {
+  async function saveProfile() {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
     if (!user) return;
 
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ ...profile, id: user.id });
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      ...profile,
+    });
 
     if (!error) {
-      alert('Profile updated!');
+      alert('Profile updated successfully!');
     } else {
-      console.error('Failed to save profile', error);
-      alert('Error saving profile');
+      alert('Failed to update profile.');
+      console.error(error);
     }
-  };
+  }
 
-  if (loading) return <p className='text-textSecondary'>Loading profile...</p>;
+  if (loading) return <p className="text-sm text-textSecondary">Loading profile...</p>;
 
   return (
-    <div className='max-w-xl mx-auto space-y-6'>
-      <h1 className='text-2xl font-bold text-textPrimary'>Your Profile</h1>
+    <div className="max-w-xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold text-textPrimary">Edit Profile</h1>
 
-      <div className='space-y-2'>
-        <label className='block text-sm font-medium text-textSecondary'>Weight Unit</label>
+      <label className="block">
+        <span className="text-sm text-textPrimary">Username</span>
+        <input
+          type="text"
+          value={profile.username || ''}
+          onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+          className="w-full p-2 border border-border rounded bg-background text-sm"
+        />
+      </label>
+
+      <label className="block">
+        <span className="text-sm text-textPrimary">Weight Unit</span>
         <select
-          value={profile.weight_unit}
-          onChange={(e) => handleChange('weight_unit', e.target.value)}
-          className='w-full p-2 rounded border border-border bg-background'
+          value={profile.weight_unit || 'lbs'}
+          onChange={(e) => setProfile({ ...profile, weight_unit: e.target.value })}
+          className="w-full p-2 border border-border rounded bg-background text-sm"
         >
           <option value="lbs">Pounds (lbs)</option>
           <option value="kg">Kilograms (kg)</option>
         </select>
-      </div>
+      </label>
 
-      <div className='space-y-2'>
-        <label className='block text-sm font-medium text-textSecondary'>Water Unit</label>
+      <label className="block">
+        <span className="text-sm text-textPrimary">Water Unit</span>
         <select
-          value={profile.water_unit}
-          onChange={(e) => handleChange('water_unit', e.target.value)}
-          className='w-full p-2 rounded border border-border bg-background'
+          value={profile.water_unit || 'oz'}
+          onChange={(e) => setProfile({ ...profile, water_unit: e.target.value })}
+          className="w-full p-2 border border-border rounded bg-background text-sm"
         >
           <option value="oz">Ounces (oz)</option>
           <option value="ml">Milliliters (ml)</option>
         </select>
-      </div>
+      </label>
 
-      <div className='space-y-2'>
-        <label className='block text-sm font-medium text-textSecondary'>Macro Goal</label>
+      <label className="block">
+        <span className="text-sm text-textPrimary">Macro Goal</span>
         <select
-          value={profile.macro_goal}
-          onChange={(e) => handleChange('macro_goal', e.target.value)}
-          className='w-full p-2 rounded border border-border bg-background'
+          value={profile.macro_goal || ''}
+          onChange={(e) => setProfile({ ...profile, macro_goal: e.target.value })}
+          className="w-full p-2 border border-border rounded bg-background text-sm"
         >
+          <option value="">Select a goal</option>
           <option value="cutting">Cutting</option>
           <option value="bulking">Bulking</option>
           <option value="maintenance">Maintenance</option>
         </select>
-      </div>
+      </label>
 
-      {/* Optional: Gender, Age, Height, Target Weight */}
-      <div className='grid grid-cols-2 gap-4'>
-        <div>
-          <label className='block text-sm font-medium text-textSecondary'>Gender</label>
-          <input
-            type="text"
-            value={profile.gender}
-            onChange={(e) => handleChange('gender', e.target.value)}
-            className='w-full p-2 rounded border border-border bg-background'
-          />
-        </div>
-
-        <div>
-          <label className='block text-sm font-medium text-textSecondary'>Age</label>
-          <input
-            type="number"
-            value={profile.age}
-            onChange={(e) => handleChange('age', e.target.value)}
-            className='w-full p-2 rounded border border-border bg-background'
-          />
-        </div>
-      </div>
-
-      <div className='grid grid-cols-2 gap-4'>
-        <div>
-          <label className='block text-sm font-medium text-textSecondary'>Height</label>
-          <input
-            type="text"
-            value={profile.height}
-            onChange={(e) => handleChange('height', e.target.value)}
-            className='w-full p-2 rounded border border-border bg-background'
-          />
-        </div>
-
-        <div>
-          <label className='block text-sm font-medium text-textSecondary'>Target Weight</label>
-          <input
-            type="text"
-            value={profile.target_weight}
-            onChange={(e) => handleChange('target_weight', e.target.value)}
-            className='w-full p-2 rounded border border-border bg-background'
-          />
-        </div>
-      </div>
-
-      <Button onClick={handleSave}>💾 Save Profile</Button>
+      <Button onClick={saveProfile} variant="primary">
+        💾 Save Profile
+      </Button>
     </div>
   );
 }

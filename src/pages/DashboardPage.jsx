@@ -6,6 +6,7 @@ import StatCard from '../components/StatCard';
 import GoalDonut from '../components/GoalDonut';
 import MacroDonut from '../components/MacroDonut';
 import ProgressCalendar from '../components/ProgressCalendar';
+import Topbar from '../components/Topbar';
 
 export default function DashboardPage() {
   const [caloriesToday, setCaloriesToday] = useState(0);
@@ -26,14 +27,87 @@ export default function DashboardPage() {
       const user = userData?.user;
       if (!user) return;
 
-      await fetchUserProfile(user.id);
-      await fetchNutrition(user.id);
-      await fetchWorkouts(user.id);
-      await fetchDailyMetrics(user.id);
+      const today = new Date().toISOString().split('T')[0];
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (profileData) setProfile(profileData);
+
+      // Fetch calories today
+      const { data: meals } = await supabase
+        .from('nutrition_logs')
+        .select('calories, quantity')
+        .eq('user_id', user.id)
+        .eq('date', today);
+      const totalCalories = meals?.reduce((acc, item) => {
+        const qty = parseFloat(item.quantity) || 1;
+        return acc + (item.calories || 0) * qty;
+      }, 0) || 0;
+      setCaloriesToday(totalCalories);
+
+      // Fetch macros
+      const { data: macros } = await supabase
+        .from('nutrition_logs')
+        .select('protein, carbs, fats, quantity')
+        .eq('user_id', user.id)
+        .eq('date', today);
+      const totals = macros?.reduce((acc, item) => {
+        const qty = parseFloat(item.quantity) || 1;
+        acc.protein += (item.protein || 0) * qty;
+        acc.carbs += (item.carbs || 0) * qty;
+        acc.fats += (item.fats || 0) * qty;
+        return acc;
+      }, { protein: 0, carbs: 0, fats: 0 });
+      setMacrosToday(totals);
+
+      // Fetch progress calendar
+      const { data: history } = await supabase
+        .from('nutrition_logs')
+        .select('date, calories, quantity')
+        .eq('user_id', user.id)
+        .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      const grouped = {};
+      history?.forEach((entry) => {
+        const date = entry.date;
+        const qty = parseFloat(entry.quantity) || 1;
+        const cals = (entry.calories || 0) * qty;
+        if (!grouped[date]) grouped[date] = 0;
+        grouped[date] += cals;
+      });
+      setNutritionHistory(grouped);
+
+      // Fetch workouts
+      const { data: workouts } = await supabase
+        .from('user_workouts')
+        .select('id, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', weekAgo);
+      setWorkoutsThisWeek(workouts?.length || 0);
+
+      // Fetch daily metrics
+      const { data: metricsData } = await supabase
+        .from('daily_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .maybeSingle();
+      if (metricsData) {
+        setMetrics({
+          weight: metricsData.weight,
+          water: metricsData.water,
+          mood: metricsData.mood
+        });
+      }
     };
 
     fetchEverything();
   }, []);
+
 
   async function fetchUserProfile(userId) {
     const { data, error } = await supabase
@@ -180,6 +254,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <Topbar profile={profile} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Weight"
@@ -188,7 +263,7 @@ export default function DashboardPage() {
               ? `${metrics.weight} ${profile?.weight_unit || 'lbs'}`
               : '—'
           }
-          icon={<Dumbbell size={24} />}
+          icon={<Dumbbell size={24} color='#ffffff' />}
           iconBg="bg-gray-800"
           onClick={() => handleEdit('weight')}
           isEditing={editingField === 'weight'}
@@ -216,7 +291,7 @@ export default function DashboardPage() {
               ? `${metrics.water} ${profile?.water_unit || 'oz'}`
               : '—'
           }
-          icon={<Flame size={24} />}
+          icon={<Flame size={24} color='#ffffff' />}
           iconBg="bg-blue-500"
           onClick={() => handleEdit('water')}
           isEditing={editingField === 'water'}

@@ -1,49 +1,95 @@
 import { useState } from 'react';
 import { supabase } from '../utils/supabase';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  async function handleSignUp(e) {
+  async function handleSignup(e) {
     e.preventDefault();
-    setError(null);
+    setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) {
-      setError(error.message);
-    } else {
-      alert('Signup successfull! Please check your email to confirm')
-      // Optionally redirect to login or dashboard
+      alert('Signup failed: ' + error.message);
+      setLoading(false);
+      return;
     }
+
+    const user = data.user;
+
+    // Attempt to insert default profile
+    if (user) {
+      const { error: profileError } = await supabase.from('profiles').insert([
+        {
+          id: user.id,
+          username,
+          weight_unit: 'lbs',
+          water_unit: 'oz',
+          macro_goal: '',
+        }
+      ]);
+
+      if (profileError) {
+        console.warn('Profile insert failed (likely due to RLS on unconfirmed email)', profileError);
+      }
+    }
+
+    alert('Signup successful! Check your email to confirm.');
+    navigate('/login');
+    setLoading(false);
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-darkBlue text-lightGray px-4">
-      <h1 className="text-2xl font-bold mb-4">Create Account</h1>
-      <form onSubmit={handleSignUp} className='flex flex-col gap-4 w-full max-w-sm'>
-        <input
-          type='email'
-          placeholder='Email'
-          className='p-2 rounded bg-slate text-white placeholder:text-lightGray'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type='password'
-          placeholder='Password'
-          className='p-2 rounded bg-slate text-white placeholder:text-lightGray'
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button type="submit">Sign Up</Button>
-        {error && <p className='text-red mt-2'>{error}</p>}
+    <div className="max-w-md mx-auto mt-10 space-y-6">
+      <h1 className="text-2xl font-bold text-textPrimary">Create Account</h1>
+
+      <form onSubmit={handleSignup} className="space-y-4">
+        <div>
+          <label className="block text-sm text-textPrimary">Username</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-2 rounded border border-border bg-background text-sm"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-textPrimary">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 rounded border border-border bg-background text-sm"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-textPrimary">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 rounded border border-border bg-background text-sm"
+            required
+          />
+        </div>
+
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Signing up...' : 'Create Account'}
+        </Button>
       </form>
     </div>
   );

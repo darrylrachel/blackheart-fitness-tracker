@@ -1,162 +1,137 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
-import { Dumbbell, Flame, CalendarHeart } from 'lucide-react';
+import { Dumbbell, Flame } from 'lucide-react';
 import Button from '../components/Button';
 import StatCard from '../components/StatCard';
 import GoalDonut from '../components/GoalDonut';
 import MacroDonut from '../components/MacroDonut';
 import ProgressCalendar from '../components/ProgressCalendar';
 
-
-export default function  DashboardPage() {
+export default function DashboardPage() {
   const [caloriesToday, setCaloriesToday] = useState(0);
   const [workoutsThisWeek, setWorkoutsThisWeek] = useState(0);
   const [macrosToday, setMacrosToday] = useState({ protein: 0, carbs: 0, fats: 0 });
   const [nutritionHistory, setNutritionHistory] = useState([]);
   const [journalNote, setJournalNote] = useState('');
-  const [metrics, setMetrics] = useState({ 
-    weight: null,
-    water: null,
-    mood: null
-   });
-  const [editingField, setEditingField] = useState(null); // // "weight" | "water" | "mood"
+  const [metrics, setMetrics] = useState({ weight: null, water: null, mood: null });
+  const [editingField, setEditingField] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const [profile, setProfile] = useState(null);
 
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    const fetchProgress = async () => {
+    const fetchEverything = async () => {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData?.user;
       if (!user) return;
 
-      const today = new Date().toISOString().split('T')[0];
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      await fetchUserProfile(user.id);
+      await fetchNutrition(user.id);
+      await fetchWorkouts(user.id);
+      await fetchDailyMetrics(user.id);
+    };
 
-      // Get calories logged today
-      const { data: meals } = await supabase
-        .from('nutrition_logs')
-        .select('calories, quantity')
-        .eq('user_id', user.id)
-        .eq('date', today);
+    fetchEverything();
+  }, []);
 
-      const totalCalories = meals?.reduce((acc, item) => {
-        const qty = parseFloat(item.quantity) || 1;
-        return acc + (item.calories || 0) * qty;
-      }, 0) || 0;
+  async function fetchUserProfile(userId) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-      setCaloriesToday(totalCalories);
+    if (data) setProfile(data);
+    if (error) console.error('Failed to fetch profile', error);
+  }
 
-      // Get last 30 days of nutrition logs
-      const { data: historyLogs } = await supabase
-        .from('nutrition_logs')
-        .select('date, calories, quantity')
-        .eq('user_id', user.id)
-        .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-      const grouped = {};
-
-      historyLogs?.forEach((entry) => {
-        const date = entry.date;
-        const qty = parseFloat(entry.quantity) || 1;
-        const cals = (entry.calories || 0) * qty;
-
-        if (!grouped[date]) grouped[date] = 0;
-        grouped[date] += cals;
-      });
-
-      setNutritionHistory(grouped);
-
-
-      // Get workouts from past 7 days
-      const { data: workouts } = await supabase
-        .from('user_workouts')
-        .select('id, created_at')
-        .eq('user_id', user.id)
-        .gte('created_at', weekAgo);
-
-      setWorkoutsThisWeek(workouts?.length || 0);
-
-      // Get today's macro breakdown
-      const { data: macros } = await supabase
-        .from('nutrition_logs')
-        .select('protein, carbs, fats, quantity')
-        .eq('user_id', user.id)
-        .eq('date', today);
-
-      const totals = macros?.reduce((acc, item) => {
-        const qty = parseFloat(item.quantity) || 1;
-        acc.protein += (item.protein || 0) * qty;
-        acc.carbs += (item.carbs || 0) * qty;
-        acc.fats += (item.fats || 0) * qty;
-        return acc;
-      }, { protein: 0, carbs: 0, fats: 0 });
-
-      setMacrosToday({
-        protein: totals?.protein || 0,
-        carbs: totals?.carbs || 0,
-        fats: totals?.fats || 0,
-      });
-
-      const { data: daily, error: metricError } = await supabase
+  async function fetchDailyMetrics(userId) {
+    const { data, error } = await supabase
       .from('daily_metrics')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('date', today)
       .maybeSingle();
 
-      if (daily) {
-        setMetrics({
-          weight: daily.weight,
-          water: daily.water,
-          mood: daily.mood
-        });
-      }
-
-    };
-
-    fetchProgress();
-  }, []);
-
-  
-
-  async function saveJournalEntry() {
-    if (!journalNote.trim()) return;
-
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData?.user;
-    if(!user) {
-      alert('Not logged in!');
-      return;
+    if (data) {
+      setMetrics({
+        weight: data.weight,
+        water: data.water,
+        mood: data.mood,
+      });
     }
+  }
 
-    const { error } = await supabase.from('journal_entries').insert([
-      {
-        user_id: user.id,
-        date: new Date().toISOString(),
-        content: journalNote.trim(),
-      }
-    ]);
+  async function fetchNutrition(userId) {
+    const { data: meals } = await supabase
+      .from('nutrition_logs')
+      .select('calories, quantity')
+      .eq('user_id', userId)
+      .eq('date', today);
 
-    if (error) {
-      console.error('Failed to save journal entry:', error);
-      alert('Error saving journal entry');
-    } else {
-      alert('Journal saved!');
-      setJournalNote('');
-    }
+    const totalCalories = meals?.reduce((acc, item) => {
+      const qty = parseFloat(item.quantity) || 1;
+      return acc + (item.calories || 0) * qty;
+    }, 0) || 0;
+
+    setCaloriesToday(totalCalories);
+
+    const { data: macros } = await supabase
+      .from('nutrition_logs')
+      .select('protein, carbs, fats, quantity')
+      .eq('user_id', userId)
+      .eq('date', today);
+
+    const totals = macros?.reduce((acc, item) => {
+      const qty = parseFloat(item.quantity) || 1;
+      acc.protein += (item.protein || 0) * qty;
+      acc.carbs += (item.carbs || 0) * qty;
+      acc.fats += (item.fats || 0) * qty;
+      return acc;
+    }, { protein: 0, carbs: 0, fats: 0 });
+
+    setMacrosToday({
+      protein: totals?.protein || 0,
+      carbs: totals?.carbs || 0,
+      fats: totals?.fats || 0,
+    });
+
+    const { data: history } = await supabase
+      .from('nutrition_logs')
+      .select('date, calories, quantity')
+      .eq('user_id', userId)
+      .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+    const grouped = {};
+    history?.forEach((entry) => {
+      const date = entry.date;
+      const qty = parseFloat(entry.quantity) || 1;
+      const cals = (entry.calories || 0) * qty;
+      if (!grouped[date]) grouped[date] = 0;
+      grouped[date] += cals;
+    });
+
+    setNutritionHistory(grouped);
+  }
+
+  async function fetchWorkouts(userId) {
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: workouts } = await supabase
+      .from('user_workouts')
+      .select('id, created_at')
+      .eq('user_id', userId)
+      .gte('created_at', weekAgo);
+
+    setWorkoutsThisWeek(workouts?.length || 0);
   }
 
   async function saveMetric(value = inputValue) {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
-    const today = new Date().toISOString().split('T')[0];
     if (!user) return;
 
-    const update = { 
-      [editingField]: value,
-      ...(editingField === 'weight' ? { unit: metrics.unit} : {}),
-      ...(editingField === 'water' ? { unit: metrics.unit} : {})
-     };
+    const update = { [editingField]: value };
 
     const { data: existing } = await supabase
       .from('daily_metrics')
@@ -166,7 +141,6 @@ export default function  DashboardPage() {
       .maybeSingle();
 
     let error;
-
     if (existing) {
       ({ error } = await supabase
         .from('daily_metrics')
@@ -179,30 +153,30 @@ export default function  DashboardPage() {
     }
 
     if (!error) {
-      setMetrics(prev => ({ ...prev, [editingField]: value }));
+      setMetrics((prev) => ({ ...prev, [editingField]: value }));
       setEditingField(null);
       setInputValue('');
     } else {
-      console.error('Failed to save metric:', error);
-      alert(error.message);
+      console.error('Error saving metric', error);
     }
   }
-
 
   function handleEdit(field) {
     setEditingField(field);
     setInputValue(metrics[field] || '');
   }
 
-
-  
   return (
-    <div className='space-y-8'>
+    <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Weight"
-          value={metrics.weight ? `${metrics.weight} ${metrics.unit || 'lbs'}` : '—'}
-          icon={<Dumbbell size={24} color='#ffffff' />}
+          value={
+            metrics.weight
+              ? `${metrics.weight} ${profile?.weight_unit || 'lbs'}`
+              : '—'
+          }
+          icon={<Dumbbell size={24} />}
           iconBg="bg-gray-800"
           onClick={() => handleEdit('weight')}
           isEditing={editingField === 'weight'}
@@ -211,21 +185,13 @@ export default function  DashboardPage() {
               <div className="flex gap-2 items-center">
                 <input
                   type="number"
-                  placeholder="Enter weight"
+                  placeholder="Weight"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="p-2 border rounded bg-background w-20 text-sm"
+                  className="p-2 border rounded bg-background w-24 text-sm"
                 />
-                <select
-                  value={metrics.unit || 'lbs'}
-                  onChange={(e) => setMetrics(prev => ({ ...prev, unit: e.target.value }))}
-                  className="p-2 rounded bg-background border text-sm"
-                >
-                  <option value="lbs">lbs</option>
-                  <option value="kg">kg</option>
-                </select>
-                <Button onClick={saveMetric} size="sm">Save</Button>
-                <Button onClick={() => setEditingField(null)} size="sm" variant="secondary">Cancel</Button>
+                <span className="text-sm text-gray-600">{profile?.weight_unit || 'lbs'}</span>
+                <Button size="sm" onClick={() => saveMetric()}>Save</Button>
               </div>
             )
           }
@@ -233,8 +199,12 @@ export default function  DashboardPage() {
 
         <StatCard
           title="Water"
-          value={metrics.water ? `${metrics.water} oz` : '—'}
-          icon={<Flame size={24} color='#ffffff' />}
+          value={
+            metrics.water
+              ? `${metrics.water} ${profile?.water_unit || 'oz'}`
+              : '—'
+          }
+          icon={<Flame size={24} />}
           iconBg="bg-blue-500"
           onClick={() => handleEdit('water')}
           isEditing={editingField === 'water'}
@@ -243,21 +213,13 @@ export default function  DashboardPage() {
               <div className="flex gap-2 items-center">
                 <input
                   type="number"
-                  placeholder="Water in oz"
+                  placeholder="Water"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="p-2 border rounded bg-background w-20 text-sm"
+                  className="p-2 border rounded bg-background w-24 text-sm"
                 />
-                <select
-                  value={metrics.unit || 'ounces'}
-                  onChange={(e) => setMetrics(prev => ({ ...prev, unit: e.target.value }))}
-                  className="p-2 rounded bg-background border text-sm"
-                >
-                  <option value="lbs">ounces</option>
-                  <option value="kg">liters</option>
-                </select>
-                <Button onClick={saveMetric} size="sm">Save</Button>
-                <Button onClick={() => setEditingField(null)} size="sm" variant="secondary">Cancel</Button>
+                <span className="text-sm text-gray-600">{profile?.water_unit || 'oz'}</span>
+                <Button size="sm" onClick={() => saveMetric()}>Save</Button>
               </div>
             )
           }
@@ -280,9 +242,7 @@ export default function  DashboardPage() {
                       setInputValue(emoji);
                       saveMetric(emoji);
                     }}
-                    className={`p-1 rounded ${
-                      inputValue === emoji ? 'ring-2 ring-primary' : ''
-                    }`}
+                    className={`p-1 rounded ${inputValue === emoji ? 'ring-2 ring-primary' : ''}`}
                   >
                     {emoji}
                   </button>
@@ -293,81 +253,37 @@ export default function  DashboardPage() {
         />
       </div>
 
-
-      {editingField && (
-        <div className="bg-surface p-4 rounded shadow space-y-2">
-          <label className="block text-sm text-textPrimary font-medium">
-            {`Update ${editingField.charAt(0).toUpperCase() + editingField.slice(1)}`}
-          </label>
-
-          {editingField === 'mood' ? (
-            <div className="flex gap-2 text-2xl">
-              {['😐', '🙂', '😄', '😤', '🥱'].map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => {
-                    setInputValue(emoji);
-                    saveMetric();
-                  }}
-                  className={`p-1 rounded ${
-                    inputValue === emoji ? 'ring-2 ring-primary' : ''
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <>
-              <input
-                type="number"
-                placeholder={`Enter ${editingField}`}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="w-full p-2 rounded border border-border bg-background text-sm"
-              />
-              <div className="flex gap-2">
-                <Button variant="primary" onClick={saveMetric}>
-                  Save
-                </Button>
-                <Button variant="secondary" onClick={() => setEditingField(null)}>
-                  Cancel
-                </Button>
-              </div>
-            </>
-          )}
-    </div>
-  )}
-
-
-
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-        <GoalDonut label='Calories Today' value={Math.round(caloriesToday)} total={2200} color='#e74c3c' />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <GoalDonut label="Calories Today" value={Math.round(caloriesToday)} total={2200} color="#e74c3c" />
         <MacroDonut data={macrosToday} totals={{ protein: 150, carbs: 250, fats: 80 }} />
         <ProgressCalendar history={nutritionHistory} dailyGoal={2200} />
-        <GoalDonut label='Workouts This Week' value={workoutsThisWeek} total={5} color='#6366f1' />
+        <GoalDonut label="Workouts This Week" value={workoutsThisWeek} total={5} color="#6366f1" />
 
         {/* Journal Entry */}
-        <div className='sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded shadow space-y-4'>
-          <h3 className='text-lg font-semibold text-textPrimary'>Quick Journal</h3>
+        <div className="sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded shadow space-y-4">
+          <h3 className="text-lg font-semibold text-textPrimary">Quick Journal</h3>
           <textarea
             rows={4}
             value={journalNote}
             onChange={(e) => setJournalNote(e.target.value)}
-            placeholder='Write something about today...'
-            className='w-full p-3 rounded border border-border bg-background text-sm'
+            placeholder="Write something about today..."
+            className="w-full p-3 rounded border border-border bg-background text-sm"
           />
-          <Button
-            onClick={saveJournalEntry}
-            variant='primary'
-          >
+          <Button onClick={async () => {
+            const { data: userData } = await supabase.auth.getUser();
+            const user = userData?.user;
+            if (!user) return;
+
+            await supabase.from('journal_entries').insert([
+              { user_id: user.id, date: new Date().toISOString(), content: journalNote }
+            ]);
+
+            setJournalNote('');
+          }} variant="primary">
             💾 Save Journal Entry
           </Button>
         </div>
-        {/* Journal Entry */}
-        
       </div>
-
     </div>
-  )
+  );
 }

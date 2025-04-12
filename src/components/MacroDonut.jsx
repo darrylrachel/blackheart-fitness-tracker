@@ -40,9 +40,21 @@ export default function MacroDonut({ data, totals }) {
           <Tooltip />
         </PieChart>
       </ResponsiveContainer>
-      <p className="text-sm text-textSecondary">
-        Protein: {Math.round(data.protein)}g • Carbs: {Math.round(data.carbs)}g • Fats: {Math.round(data.fats)}g
-      </p>
+      <div className="flex justify-center gap-4 text-xs">
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10b981' }}></span>
+          {Math.round(data.protein)}g Protein
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f59e0b' }}></span>
+          {Math.round(data.carbs)}g Carbs
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#ef4444' }}></span>
+          {Math.round(data.fats)}g Fats
+        </span>
+      </div>
+
     </div>
   );
 }

@@ -6,7 +6,7 @@ import StatCard from '../components/StatCard';
 import GoalDonut from '../components/GoalDonut';
 import MacroDonut from '../components/MacroDonut';
 import ProgressCalendar from '../components/ProgressCalendar';
-import Topbar from '../components/Topbar';
+
 
 export default function DashboardPage() {
   const [caloriesToday, setCaloriesToday] = useState(0);
@@ -254,7 +254,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <Topbar profile={profile} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Weight"

@@ -97,12 +97,12 @@ export default function  DashboardPage() {
         fats: totals?.fats || 0,
       });
 
-      const { daily: daily, error } = await supabase
+      const { data: daily, error: metricError } = await supabase
       .from('daily_metrics')
       .select('*')
       .eq('user_id', user.id)
       .eq('date', today)
-      .single();
+      .maybeSingle();
 
       if (daily) {
         setMetrics({
@@ -146,20 +146,24 @@ export default function  DashboardPage() {
     }
   }
 
-  async function saveMetric() {
+  async function saveMetric(value = inputValue) {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
     const today = new Date().toISOString().split('T')[0];
     if (!user) return;
 
-    const update = { [editingField]: inputValue };
+    const update = { 
+      [editingField]: value,
+      ...(editingField === 'weight' ? { unit: metrics.unit} : {}),
+      ...(editingField === 'water' ? { unit: metrics.unit} : {})
+     };
 
     const { data: existing } = await supabase
       .from('daily_metrics')
       .select('id')
       .eq('user_id', user.id)
       .eq('date', today)
-      .single();
+      .maybeSingle();
 
     let error;
 
@@ -175,11 +179,12 @@ export default function  DashboardPage() {
     }
 
     if (!error) {
-      setMetrics(prev => ({ ...prev, [editingField]: inputValue }));
+      setMetrics(prev => ({ ...prev, [editingField]: value }));
       setEditingField(null);
       setInputValue('');
     } else {
       console.error('Failed to save metric:', error);
+      alert(error.message);
     }
   }
 
@@ -196,28 +201,101 @@ export default function  DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Weight"
-          value={metrics.weight ? `${metrics.weight} lbs` : '—'}
-          icon={<Dumbbell size={24} />}
+          value={metrics.weight ? `${metrics.weight} ${metrics.unit || 'lbs'}` : '—'}
+          icon={<Dumbbell size={24} color='#ffffff' />}
+          iconBg="bg-gray-800"
           onClick={() => handleEdit('weight')}
+          isEditing={editingField === 'weight'}
+          inputElement={
+            editingField === 'weight' && (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="p-2 border rounded bg-background w-20 text-sm"
+                />
+                <select
+                  value={metrics.unit || 'lbs'}
+                  onChange={(e) => setMetrics(prev => ({ ...prev, unit: e.target.value }))}
+                  className="p-2 rounded bg-background border text-sm"
+                >
+                  <option value="lbs">lbs</option>
+                  <option value="kg">kg</option>
+                </select>
+                <Button onClick={saveMetric} size="sm">Save</Button>
+                <Button onClick={() => setEditingField(null)} size="sm" variant="secondary">Cancel</Button>
+              </div>
+            )
+          }
         />
+
         <StatCard
           title="Water"
           value={metrics.water ? `${metrics.water} oz` : '—'}
-          icon={<Flame size={24} />}
+          icon={<Flame size={24} color='#ffffff' />}
           iconBg="bg-blue-500"
           onClick={() => handleEdit('water')}
+          isEditing={editingField === 'water'}
+          inputElement={
+            editingField === 'water' && (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="number"
+                  placeholder="Water in oz"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="p-2 border rounded bg-background w-20 text-sm"
+                />
+                <select
+                  value={metrics.unit || 'ounces'}
+                  onChange={(e) => setMetrics(prev => ({ ...prev, unit: e.target.value }))}
+                  className="p-2 rounded bg-background border text-sm"
+                >
+                  <option value="lbs">ounces</option>
+                  <option value="kg">liters</option>
+                </select>
+                <Button onClick={saveMetric} size="sm">Save</Button>
+                <Button onClick={() => setEditingField(null)} size="sm" variant="secondary">Cancel</Button>
+              </div>
+            )
+          }
         />
+
         <StatCard
           title="Mood"
           value={metrics.mood || '—'}
           icon={<span className="text-xl">{metrics.mood || '🙂'}</span>}
           iconBg="bg-yellow-400"
           onClick={() => handleEdit('mood')}
+          isEditing={editingField === 'mood'}
+          inputElement={
+            editingField === 'mood' && (
+              <div className="flex gap-2 text-2xl">
+                {['😐', '🙂', '😄', '😤', '🥱'].map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => {
+                      setInputValue(emoji);
+                      saveMetric(emoji);
+                    }}
+                    className={`p-1 rounded ${
+                      inputValue === emoji ? 'ring-2 ring-primary' : ''
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )
+          }
         />
       </div>
 
+
       {editingField && (
-        <div className="bg-surface p-4 rounded shadow mt-4 space-y-2">
+        <div className="bg-surface p-4 rounded shadow space-y-2">
           <label className="block text-sm text-textPrimary font-medium">
             {`Update ${editingField.charAt(0).toUpperCase() + editingField.slice(1)}`}
           </label>
@@ -231,30 +309,36 @@ export default function  DashboardPage() {
                     setInputValue(emoji);
                     saveMetric();
                   }}
-                  className={inputValue === emoji ? 'ring-2 ring-primary rounded' : ''}
+                  className={`p-1 rounded ${
+                    inputValue === emoji ? 'ring-2 ring-primary' : ''
+                  }`}
                 >
                   {emoji}
                 </button>
               ))}
             </div>
           ) : (
-            <input
-              type="number"
-              placeholder={`Enter ${editingField}`}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              className="w-full p-2 rounded border border-border bg-background text-sm"
-            />
+            <>
+              <input
+                type="number"
+                placeholder={`Enter ${editingField}`}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                className="w-full p-2 rounded border border-border bg-background text-sm"
+              />
+              <div className="flex gap-2">
+                <Button variant="primary" onClick={saveMetric}>
+                  Save
+                </Button>
+                <Button variant="secondary" onClick={() => setEditingField(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </>
           )}
+    </div>
+  )}
 
-          {editingField !== 'mood' && (
-            <div className="flex gap-2">
-              <Button variant="primary" onClick={saveMetric}>Save</Button>
-              <Button variant="secondary" onClick={() => setEditingField(null)}>Cancel</Button>
-            </div>
-          )}
-        </div>
-      )}
 
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>

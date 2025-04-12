@@ -1,14 +1,27 @@
-export default function StatCard({ title, value, icon, iconBg = 'bg-green' }) {
+export default function StatCard({
+  title,
+  value,
+  icon,
+  iconBg = 'bg-primary',
+  onClick,
+  isEditing = false,
+  inputElement = null,
+}) {
   return (
-    // bg-white
-    <div className="bg-surface rounded-xl shadow-md p-4 flex items-center justify-between">
-      <div>
-        <h4 className="text-sm font-semibold text-textSecondary">{title}</h4>
-        <p className="text-2xl font-bold text-textPrimary mt-1">{value}</p>
-      </div>
-      <div className={`p-3 rounded-full ${iconBg} text-white`}>
+    <div
+      onClick={onClick}
+      className="cursor-pointer p-4 bg-surface rounded-xl shadow-md hover:ring-2 hover:ring-accent transition space-y-2"
+    >
+      <div className={`w-10 h-10 flex items-center justify-center rounded-full ${iconBg}`}>
         {icon}
       </div>
+      <div className="text-sm text-textSecondary font-medium">{title}</div>
+      
+      {isEditing ? (
+        inputElement
+      ) : (
+        <div className="text-lg font-bold text-textPrimary">{value}</div>
+      )}
     </div>
-  )
+  );
 }

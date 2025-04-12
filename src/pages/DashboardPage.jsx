@@ -3,12 +3,16 @@ import { supabase } from '../utils/supabase';
 import { Dumbbell, Flame, CalendarHeart } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import GoalDonut from '../components/GoalDonut';
+import MacroDonut from '../components/MacroDonut';
+
 
 
 
 export default function  DashboardPage() {
   const [caloriesToday, setCaloriesToday] = useState(0);
   const [workoutsThisWeek, setWorkoutsThisWeek] = useState(0);
+  const [macrosToday, setMacrosToday] = useState({ protein: 0, carbs: 0, fats: 0 });
+
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -41,6 +45,28 @@ export default function  DashboardPage() {
         .gte('created_at', weekAgo);
 
       setWorkoutsThisWeek(workouts?.length || 0);
+
+      // Get today's macro breakdown
+      const { data: macros } = await supabase
+        .from('nutrition_logs')
+        .select('protein, carbs, fats, quantity')
+        .eq('user_id', user.id)
+        .eq('date', today);
+
+      const totals = macros?.reduce((acc, item) => {
+        const qty = parseFloat(item.quantity) || 1;
+        acc.protein += (item.protein || 0) * qty;
+        acc.carbs += (item.carbs || 0) * qty;
+        acc.fats += (item.fats || 0) * qty;
+        return acc;
+      }, { protein: 0, carbs: 0, fats: 0 });
+
+      setMacrosToday({
+        protein: totals?.protein || 0,
+        carbs: totals?.carbs || 0,
+        fats: totals?.fats || 0,
+      });
+
     };
 
     fetchProgress();
@@ -77,6 +103,7 @@ export default function  DashboardPage() {
       </div>
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
         <GoalDonut label='Calories Today' value={Math.round(caloriesToday)} total={2200} color='#e74c3c' />
+        <MacroDonut data={macrosToday} totals={{ protein: 150, carbs: 250, fats: 80 }} />
         <GoalDonut label='Workouts This Week' value={workoutsThisWeek} total={5} color='#6366f1' />
 
         <GoalDonut label='Steps Today' value={7345} total={10000} color='#27ae60' />

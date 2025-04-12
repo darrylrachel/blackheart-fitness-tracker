@@ -60,6 +60,7 @@ export default function DashboardPage() {
         water: data.water,
         mood: data.mood,
       });
+
     }
   }
 
@@ -131,7 +132,13 @@ export default function DashboardPage() {
     const user = userData?.user;
     if (!user) return;
 
-    const update = { [editingField]: value };
+    const today = new Date().toISOString().split('T')[0];
+
+    const update = {
+      [editingField]: value,
+      ...(editingField === 'weight' ? { unit: profile?.weight_unit || 'lbs' } : {}),
+      ...(editingField === 'water' ? { unit: profile?.water_unit || 'oz' } : {}),
+    };
 
     const { data: existing } = await supabase
       .from('daily_metrics')
@@ -165,6 +172,11 @@ export default function DashboardPage() {
     setEditingField(field);
     setInputValue(metrics[field] || '');
   }
+
+  if (!profile) {
+    return <div className="text-sm text-textSecondary">Loading profile...</div>;
+  }
+
 
   return (
     <div className="space-y-8">

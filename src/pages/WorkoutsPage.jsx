@@ -9,6 +9,8 @@ export default function WorkoutPage() {
   const navigate = useNavigate();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [programs, setPrograms] = useState([]);
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
 
   useEffect(() => {
     const fetchWorkouts = async () => {
@@ -27,7 +29,83 @@ export default function WorkoutPage() {
     };
 
     fetchWorkouts();
-  })
+
+    const fetchPrograms = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('programs')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (!error) setPrograms(data);
+  };
+
+  fetchPrograms();
+
+
+  }, []);
+
+  async function saveTestProgram() {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) {
+      alert('User not logged in');
+      return;
+    }
+
+    const sampleProgram = {
+      name: 'Push / Pull / Legs',
+      description: 'Classic 3-day split',
+      days: [
+        {
+          name: 'Push Day',
+          muscles: 'Chest, Shoulders, Triceps',
+          exercises: [
+            { name: 'Barbell Bench Press', sets: 4, reps: '8-10' },
+            { name: 'Overhead Shoulder Press', sets: 3, reps: '10-12' },
+            { name: 'Tricep Dips', sets: 3, reps: '12-15' },
+          ],
+        },
+        {
+          name: 'Pull Day',
+          muscles: 'Back, Biceps',
+          exercises: [
+            { name: 'Deadlifts', sets: 4, reps: '5-8' },
+            { name: 'Pull-ups', sets: 3, reps: 'Max' },
+            { name: 'Barbell Rows', sets: 3, reps: '8-10' },
+          ],
+        },
+        {
+          name: 'Leg Day',
+          muscles: 'Quads, Glutes, Hamstrings',
+          exercises: [
+            { name: 'Squats', sets: 4, reps: '6-10' },
+            { name: 'Leg Press', sets: 3, reps: '10-12' },
+            { name: 'Romanian Deadlifts', sets: 3, reps: '10-12' },
+          ],
+        }
+      ]
+    };
+
+    const { error } = await supabase.from('programs').insert([
+      {
+        user_id: user.id,
+        name: sampleProgram.name,
+        description: sampleProgram.description,
+        days: sampleProgram.days,
+      }
+    ]);
+
+    if (error) {
+      console.error('Failed to save program', error);
+      alert('Error saving program.');
+    } else {
+      alert('Program saved!');
+    }
+}
 
   return (
     <div className='space-y-6'>
@@ -39,6 +117,7 @@ export default function WorkoutPage() {
         <Button variant='primary' onClick={() => alert('Coming soon: Pre-Built Program')}>
           🗂️ Pre-Built Programs
         </Button>
+        
         <Button variant='secondary' onClick={() => alert('Coming soon: Build your own Program')}>
           🧱 Build Your Own
         </Button>
@@ -73,6 +152,30 @@ export default function WorkoutPage() {
       <Button onClick={() => navigate('/program')}>
         View Program
       </Button>
+
+      {programs.length > 0 && (
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-textPrimary">Saved Programs</h2>
+        {programs.map((program) => (
+          <div key={program.id} className="bg-background p-4 rounded shadow space-y-2">
+            <div className="flex justify-between items-center">
+              <h3 className="text-md font-bold text-textPrimary">{program.name}</h3>
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedProgramId(program.id)}
+              >
+                {selectedProgramId === program.id ? '✅ Selected' : 'Set Active'}
+              </Button>
+            </div>
+            <p className="text-sm text-textSecondary">{program.description}</p>
+            <p className="text-sm text-textSecondary">
+              {program.days?.length} Day Split
+            </p>
+          </div>
+        ))}
+      </div>
+    )}
+
 
       <div className='bg-surface rounded-lg p-4 shadow-md mt-4'>
         <h2 className='text-lg font-semibold mb-2 text-darkBlue'>Recent</h2>

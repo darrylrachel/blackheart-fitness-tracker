@@ -4,14 +4,14 @@ import { Dumbbell, Flame, CalendarHeart } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import GoalDonut from '../components/GoalDonut';
 import MacroDonut from '../components/MacroDonut';
-
-
+import ProgressCalendar from '../components/ProgressCalendar';
 
 
 export default function  DashboardPage() {
   const [caloriesToday, setCaloriesToday] = useState(0);
   const [workoutsThisWeek, setWorkoutsThisWeek] = useState(0);
   const [macrosToday, setMacrosToday] = useState({ protein: 0, carbs: 0, fats: 0 });
+  const [nutritionHistory, setNutritionHistory] = useState([]);
 
 
   useEffect(() => {
@@ -36,6 +36,27 @@ export default function  DashboardPage() {
       }, 0) || 0;
 
       setCaloriesToday(totalCalories);
+
+      // Get last 30 days of nutrition logs
+      const { data: historyLogs } = await supabase
+        .from('nutrition_logs')
+        .select('date, calories, quantity')
+        .eq('user_id', user.id)
+        .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+      const grouped = {};
+
+      historyLogs?.forEach((entry) => {
+        const date = entry.date;
+        const qty = parseFloat(entry.quantity) || 1;
+        const cals = (entry.calories || 0) * qty;
+
+        if (!grouped[date]) grouped[date] = 0;
+        grouped[date] += cals;
+      });
+
+      setNutritionHistory(grouped);
+
 
       // Get workouts from past 7 days
       const { data: workouts } = await supabase
@@ -105,10 +126,9 @@ export default function  DashboardPage() {
         <GoalDonut label='Calories Today' value={Math.round(caloriesToday)} total={2200} color='#e74c3c' />
         <MacroDonut data={macrosToday} totals={{ protein: 150, carbs: 250, fats: 80 }} />
         <GoalDonut label='Workouts This Week' value={workoutsThisWeek} total={5} color='#6366f1' />
-
-        <GoalDonut label='Steps Today' value={7345} total={10000} color='#27ae60' />
-        <GoalDonut label='Workouts This Week' value={3} total={5} color='#e2c3e50' />
+        <ProgressCalendar history={nutritionHistory} dailyGoal={2200} />
       </div>
+
     </div>
   )
 }

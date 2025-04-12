@@ -12,6 +12,7 @@ import ProfilePage from '../pages/ProfilePage';
 import ProgramPage from '../pages/ProgramPage';
 import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
+import CoachPage from '../pages/CoachPage';
 import ProgressPage from "../pages/ProgressPage";
 
 
@@ -85,6 +86,16 @@ const router = createBrowserRouter ([
       <ProtectedRoute>
         <DashboardLayout>
           <ProgressPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/coach',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <CoachPage />
         </DashboardLayout>
       </ProtectedRoute>
     )

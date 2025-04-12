@@ -1,62 +1,121 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
-import GoalDonut from '../components/GoalDonut';
 import Button from '../components/Button';
 
 export default function WorkoutsPage() {
-  const [activeProgram, setActiveProgram] = useState(null);
-  const [dayProgress, setDayProgress] = useState({ current: 0, total: 0 });
+  const [availablePrograms, setAvailablePrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState(null);
 
   useEffect(() => {
-    const fetchProgram = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) return;
+    const fetchPrograms = async () => {
+      const { data, error } = await supabase
+        .from('workout_programs')
+        .select('*')
+        .order('created_at', { ascending: true });
 
-      const { data: programs, error } = await supabase
-        .from('user_programs')
-        .select('*, workout_programs(name)')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (programs) {
-        setActiveProgram(programs);
-        const currentDay = programs?.current_day || 0;
-        const totalDays = programs?.total_days || 42;
-        setDayProgress({ current: currentDay, total: totalDays });
+      if (error) {
+        setError('Failed to load programs');
+        console.error(error);
+      } else {
+        setAvailablePrograms(data);
       }
+      setLoading(false);
     };
 
-    fetchProgram();
+    fetchPrograms();
   }, []);
+
+  async function activateProgram(programId) {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) return alert('Please log in.');
+
+    // Step 1: Mark any existing user_programs inactive
+    await supabase
+      .from('user_programs')
+      .update({ is_active: false })
+      .eq('user_id', user.id);
+
+    // Step 2: Insert new active program
+    const { error } = await supabase.from('user_programs').insert([
+      {
+        user_id: user.id,
+        program_id: programId,
+        current_day_index: 1, // Start at day 1
+        is_active: true,
+        started_at: new Date().toISOString(),
+      },
+    ]);
+
+    if (error) {
+      console.error('Failed to activate program:', error);
+      alert('Error activating program');
+    } else {
+      alert('Program activated!');
+      setShowModal(false);
+    }
+  }
+
+
+  function openModal(program) {
+    setSelectedProgram(program);
+    setShowModal(true);
+  }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-textPrimary">Your Workouts</h1>
 
-      <div className="flex gap-4 flex-wrap">
-        <Button>Start New Workout</Button>
-        <Button variant="secondary">📒 Pre-Built Programs</Button>
-        <Button variant="secondary">🧱 Build Your Own</Button>
-        <Button variant="secondary">🎲 Generate Random Workout</Button>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Button variant="primary" onClick={() => setShowModal(true)}>
+          🗂️ Pre-Built Programs
+        </Button>
+        <Button variant="secondary" onClick={() => alert('Coming soon: Build your own Program')}>
+          🧱 Build Your Own
+        </Button>
+        <Button variant="secondary" onClick={() => alert('Coming soon: Generate Random Workout')}>
+          🎲 Generate Random Workout
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-        {activeProgram ? (
-          <GoalDonut
-            label={activeProgram.workout_programs?.name || 'My Program'}
-            value={dayProgress.current}
-            total={dayProgress.total}
-            color="#bfa85d"
-          />
-        ) : (
-          <div className="col-span-3 bg-surface p-6 rounded-xl shadow text-center text-textSecondary text-sm">
-            <p>You haven't selected a workout program yet.</p>
-            <p className="mt-2">Choose a program to begin tracking your progress.</p>
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-2xl w-full rounded-lg shadow-lg p-6 space-y-4">
+            <h2 className="text-xl font-bold text-textPrimary">Pre-Built Programs</h2>
+            {loading ? (
+              <p className="text-sm text-textSecondary">Loading programs...</p>
+            ) : error ? (
+              <p className="text-red-500 text-sm">{error}</p>
+            ) : (
+              <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                {availablePrograms.map((program) => (
+                  <div
+                    key={program.id}
+                    className="bg-surface rounded-xl shadow-md p-4 space-y-2"
+                  >
+                    <h3 className="text-lg font-semibold text-textPrimary">{program.title}</h3>
+                    <p className="text-sm text-textSecondary">{program.description}</p>
+                    <p className="text-xs text-textSecondary italic">
+                      Duration: {program.duration_days} days — Goal: {program.goal_type}
+                    </p>
+                    <Button variant="primary" onClick={() => activateProgram(program.id)}>
+                      Start This Program
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex justify-end pt-4">
+              <Button variant="secondary" onClick={() => setShowModal(false)}>
+                Close
+              </Button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import StatCard from '../components/StatCard';
 import GoalDonut from '../components/GoalDonut';
 import MacroDonut from '../components/MacroDonut';
 import ProgressCalendar from '../components/ProgressCalendar';
+import WorkoutOverview from '../components/WorkoutOverview';
 
 
 export default function DashboardPage() {
@@ -343,7 +344,8 @@ export default function DashboardPage() {
         <GoalDonut label="Calories Today" value={Math.round(caloriesToday)} total={2200} color="#e74c3c" />
         <MacroDonut data={macrosToday} totals={{ protein: 150, carbs: 250, fats: 80 }} />
         <ProgressCalendar history={nutritionHistory} dailyGoal={2200} />
-        <GoalDonut label="Workouts This Week" value={workoutsThisWeek} total={5} color="#6366f1" />
+        {/* <GoalDonut label="Workouts This Week" value={workoutsThisWeek} total={5} color="#6366f1" /> */}
+        <WorkoutOverview />
 
         {/* Journal Entry */}
         <div className="sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded shadow space-y-4">

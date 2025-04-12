@@ -15,7 +15,7 @@ export default function ProgramProgressDonut({ name, currentDay, totalDays }) {
 
   return (
     <div className='bg-surface p-6 rounded-xl shadow-md text-center space-y-3'>
-      <h3 className='text-lg font-bold text-textPrimary'>{name}</h3>
+      <h3 className='text-sm font-semibold text-textPrimary'>{name}</h3>
       <ResponsiveContainer width='100%' height={200}>
         <PieChart>
           <Pie

@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GoalDonut from '../components/GoalDonut';
 import Button from '../components/Button';
 import { supabase } from '../utils/supabase';
 import { Flame, Drumstick, EggFried, Leaf } from 'lucide-react';
+
+function getLocalDate() {
+  const local = new Date();
+  local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+  return local.toISOString().split('T')[0];
+}
 
 const API_URL = 'https://trackapi.nutritionix.com/v2/natural/nutrients';
 
@@ -33,7 +39,6 @@ export default function NutritionPage() {
       .join(' ');
   }
 
-
   async function searchFood() {
     if (!query.trim()) return;
     setLoading(true);
@@ -58,7 +63,6 @@ export default function NutritionPage() {
   async function addToLog(food) {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
-    console.log(user.id);
     if (!user) {
       alert('Not logged in!');
       return;
@@ -69,7 +73,7 @@ export default function NutritionPage() {
     const { error } = await supabase.from('nutrition_logs').insert([
       {
         user_id: user.id,
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalDate(),
         meal: food.meal,
         food_name: food.food_name,
         serving_unit: food.serving_unit,
@@ -89,7 +93,29 @@ export default function NutritionPage() {
       setResults([]);
       setQuery('');
     }
-  }
+  };
+
+  useEffect(() => {
+    const fetchLoggedMeals = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('nutrition_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', getLocalDate());
+
+      if (error) {
+        console.error("Failed to load logged meals:", error);
+      } else {
+        setLog(data || []);
+      }
+    };
+
+    fetchLoggedMeals();
+  }, []);
 
 
 

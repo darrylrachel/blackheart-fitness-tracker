@@ -1,11 +1,15 @@
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 
-// dailyGoal needs to be based on calculted daily goal (dynamic)
+// dailyGoal needs to be based on calculated daily goal (dynamic)
 export default function ProgressCalendar({ history, dailyGoal = 2200 }) {
-  // Build a list of past 28 days
-  const days = Array.from({ length: 28 }, (_, i) => {
-    const date = subDays(new Date(), 27 - i);
-    const key = format(date, 'yyyy-MM-dd');
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => {
+    const date = new Date(year, month, i + 1);
+    const key = date.toISOString().split("T")[0];
     const calories = history?.[key] || 0;
 
     let status = 'none';
@@ -21,9 +25,11 @@ export default function ProgressCalendar({ history, dailyGoal = 2200 }) {
     };
   });
 
+  const monthName = today.toLocaleString("default", { month: "long" });
+
   return (
     <div className="bg-surface p-6 rounded-xl shadow-md space-y-3">
-      <h3 className="text-lg font-semibold text-textPrimary">📅 Last 28 Days</h3>
+      <h3 className="text-lg font-semibold text-textPrimary">📅 {monthName} {year}</h3>
 
       <div className="grid grid-cols-7 gap-2 text-xs">
         {days.map((day, i) => (

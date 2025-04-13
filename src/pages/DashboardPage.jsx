@@ -8,6 +8,11 @@ import MacroDonut from '../components/MacroDonut';
 import ProgressCalendar from '../components/ProgressCalendar';
 import WorkoutOverview from '../components/WorkoutOverview';
 
+function getLocalDate() {
+  const local = new Date();
+  local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+  return local.toISOString().split('T')[0];
+}
 
 export default function DashboardPage() {
   const [caloriesToday, setCaloriesToday] = useState(0);
@@ -20,7 +25,7 @@ export default function DashboardPage() {
   const [inputValue, setInputValue] = useState('');
   const [profile, setProfile] = useState(null);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDate();
 
   useEffect(() => {
     const fetchEverything = async () => {
@@ -28,10 +33,9 @@ export default function DashboardPage() {
       const user = userData?.user;
       if (!user) return;
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDate();
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Fetch profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -39,7 +43,6 @@ export default function DashboardPage() {
         .maybeSingle();
       if (profileData) setProfile(profileData);
 
-      // Fetch calories today
       const { data: meals } = await supabase
         .from('nutrition_logs')
         .select('calories, quantity')
@@ -51,7 +54,6 @@ export default function DashboardPage() {
       }, 0) || 0;
       setCaloriesToday(totalCalories);
 
-      // Fetch macros
       const { data: macros } = await supabase
         .from('nutrition_logs')
         .select('protein, carbs, fats, quantity')
@@ -66,7 +68,6 @@ export default function DashboardPage() {
       }, { protein: 0, carbs: 0, fats: 0 });
       setMacrosToday(totals);
 
-      // Fetch progress calendar
       const { data: history } = await supabase
         .from('nutrition_logs')
         .select('date, calories, quantity')
@@ -82,7 +83,6 @@ export default function DashboardPage() {
       });
       setNutritionHistory(grouped);
 
-      // Fetch workouts
       const { data: workouts } = await supabase
         .from('user_workouts')
         .select('id, created_at')
@@ -90,7 +90,6 @@ export default function DashboardPage() {
         .gte('created_at', weekAgo);
       setWorkoutsThisWeek(workouts?.length || 0);
 
-      // Fetch daily metrics
       const { data: metricsData } = await supabase
         .from('daily_metrics')
         .select('*')

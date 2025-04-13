@@ -13,7 +13,8 @@ import ProgramPage from '../pages/ProgramPage';
 import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
 import CoachPage from '../pages/CoachPage';
-import ProgressPage from "../pages/ProgressPage";
+import AnalyticsPage from "../pages/AnalyticsPage";
+import JournalPage from '../pages/JournalPage';
 
 
 
@@ -81,11 +82,11 @@ const router = createBrowserRouter ([
     ),
   },
   {
-    path: '/progress',
+    path: '/analytics',
     element: (
       <ProtectedRoute>
         <DashboardLayout>
-          <ProgressPage />
+          <AnalyticsPage />
         </DashboardLayout>
       </ProtectedRoute>
     )
@@ -106,6 +107,16 @@ const router = createBrowserRouter ([
       <ProtectedRoute>
         <DashboardLayout>
           <ProgramPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/journal',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <JournalPage />
         </DashboardLayout>
       </ProtectedRoute>
     )

@@ -16,6 +16,7 @@ import {
    Tooltip, 
    ResponsiveContainer
 } from 'recharts';
+import { format, parseISO } from 'date-fns';
 
 
 function getLocalDate() {
@@ -120,10 +121,10 @@ export default function DashboardPage() {
 
     const trends = (metricHistory || [])
       .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .filter(entry => entry.weight !== null)
       .map(entry => ({
         date: entry.date,
-        water: entry.water ?? null,
-        weight: entry.weight ?? null,
+        weight: entry.weight,
       }));
     setTrendHistory(trends);
 
@@ -294,20 +295,38 @@ export default function DashboardPage() {
           <WorkoutOverview />
   
           {/* Water & Weight Trends */}
-          <div className="sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded shadow">
-            <h3 className="text-sm font-semibold text-textPrimary mb-4">📈 Water & Weight Trends (Last 30 Days)</h3>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded-2xl shadow space-y-4">
+            <h3 className="text-base font-semibold text-textPrimary">📉 Weight Trend (Last 30 Days)</h3>
+
+            <ResponsiveContainer width="100%" height={250}>
               <LineChart data={trendHistory}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                <YAxis yAxisId="left" orientation="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Line yAxisId="left" type="monotone" dataKey="weight" stroke="#6366f1" name="Weight" dot={false} />
-                <Line yAxisId="right" type="monotone" dataKey="water" stroke="#38bdf8" name="Water" dot={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(str) => format(parseISO(str), "MMM d")}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                />
+                <YAxis
+                  domain={['dataMin - 5', 'dataMax + 5']}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  width={40}
+                />
+                <Tooltip
+                  labelFormatter={(label) => format(parseISO(label), "MMM d, yyyy")}
+                  formatter={(value) => [`${value} ${profile?.weight_unit ?? 'lbs'}`, 'Weight']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  stroke="#60a5fa"
+                  strokeWidth={2.5}
+                  dot={false}
+                  name="Weight"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
+
 
         </div>
       </div>

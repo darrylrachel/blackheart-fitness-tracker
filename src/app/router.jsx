@@ -15,6 +15,7 @@ import LoginPage from '../pages/LoginPage';
 import CoachPage from '../pages/CoachPage';
 import AnalyticsPage from "../pages/AnalyticsPage";
 import JournalPage from '../pages/JournalPage';
+import CreateWorkoutProgramPage from "../pages/CreateWorkoutProgramPage";
 
 
 
@@ -57,6 +58,16 @@ const router = createBrowserRouter ([
       <ProtectedRoute>
         <DashboardLayout>
           <StartBlankWorkoutPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/workouts/create',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <CreateWorkoutProgramPage />
         </DashboardLayout>
       </ProtectedRoute>
     ),

@@ -33,7 +33,6 @@ export default function DashboardPage() {
       const user = userData?.user;
       if (!user) return;
 
-      const today = getLocalDate();
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const { data: profileData } = await supabase
@@ -108,111 +107,21 @@ export default function DashboardPage() {
     fetchEverything();
   }, []);
 
-
-  async function fetchUserProfile(userId) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (data) setProfile(data);
-    if (error) console.error('Failed to fetch profile', error);
-  }
-
-  async function fetchDailyMetrics(userId) {
-    const { data, error } = await supabase
-      .from('daily_metrics')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('date', today)
-      .maybeSingle();
-
-    if (data) {
-      setMetrics({
-        weight: data.weight,
-        water: data.water,
-        mood: data.mood,
-      });
-
-    }
-  }
-
-  async function fetchNutrition(userId) {
-    const { data: meals } = await supabase
-      .from('nutrition_logs')
-      .select('calories, quantity')
-      .eq('user_id', userId)
-      .eq('date', today);
-
-    const totalCalories = meals?.reduce((acc, item) => {
-      const qty = parseFloat(item.quantity) || 1;
-      return acc + (item.calories || 0) * qty;
-    }, 0) || 0;
-
-    setCaloriesToday(totalCalories);
-
-    const { data: macros } = await supabase
-      .from('nutrition_logs')
-      .select('protein, carbs, fats, quantity')
-      .eq('user_id', userId)
-      .eq('date', today);
-
-    const totals = macros?.reduce((acc, item) => {
-      const qty = parseFloat(item.quantity) || 1;
-      acc.protein += (item.protein || 0) * qty;
-      acc.carbs += (item.carbs || 0) * qty;
-      acc.fats += (item.fats || 0) * qty;
-      return acc;
-    }, { protein: 0, carbs: 0, fats: 0 });
-
-    setMacrosToday({
-      protein: totals?.protein || 0,
-      carbs: totals?.carbs || 0,
-      fats: totals?.fats || 0,
-    });
-
-    const { data: history } = await supabase
-      .from('nutrition_logs')
-      .select('date, calories, quantity')
-      .eq('user_id', userId)
-      .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-    const grouped = {};
-    history?.forEach((entry) => {
-      const date = entry.date;
-      const qty = parseFloat(entry.quantity) || 1;
-      const cals = (entry.calories || 0) * qty;
-      if (!grouped[date]) grouped[date] = 0;
-      grouped[date] += cals;
-    });
-
-    setNutritionHistory(grouped);
-  }
-
-  async function fetchWorkouts(userId) {
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: workouts } = await supabase
-      .from('user_workouts')
-      .select('id, created_at')
-      .eq('user_id', userId)
-      .gte('created_at', weekAgo);
-
-    setWorkoutsThisWeek(workouts?.length || 0);
-  }
-
   async function saveMetric(value = inputValue) {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
     if (!user) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDate();
 
     const update = {
-      [editingField]: value,
-      ...(editingField === 'weight' ? { unit: profile?.weight_unit || 'lbs' } : {}),
-      ...(editingField === 'water' ? { unit: profile?.water_unit || 'oz' } : {}),
+      weight: editingField === 'weight' ? value : metrics.weight ?? null,
+      water: editingField === 'water' ? value : metrics.water ?? null,
+      mood: editingField === 'mood' ? value : metrics.mood ?? null,
+      weight_unit: profile?.weight_unit ?? 'lbs',
+      water_unit: profile?.water_unit ?? 'oz',
     };
+
 
     const { data: existing } = await supabase
       .from('daily_metrics')
@@ -241,6 +150,10 @@ export default function DashboardPage() {
       console.error('Error saving metric', error);
     }
   }
+
+
+  
+
 
   function handleEdit(field) {
     setEditingField(field);

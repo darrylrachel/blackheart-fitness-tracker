@@ -63,9 +63,9 @@ export default function UserMenu() {
             <li>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-background text-red"
+                className="flex items-center gap-2 w-full px-4 py-2 text-textPrimary"
               >
-                <Logout size={16} />
+                <LogOut size={16} />
                 Logout
               </button>
             </li>

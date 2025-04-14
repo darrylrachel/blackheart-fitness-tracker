@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
-import { supabase } from '../utils/supabase';
 
-export default function DashboardLayout({ children }) {
+import { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/supabase';
+import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
+
+export default function DashboardLayout() {
   const [profile, setProfile] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -18,25 +21,39 @@ export default function DashboardLayout({ children }) {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (data) setProfile(data);
+      if (!data) {
+        // Auto-create profile for new users
+        await supabase.from('profiles').insert({
+          id: user.id,
+          onboarding_complete: false
+        });
+        navigate('/onboarding');
+        return;
+      }
+
+      setProfile(data);
+
+      if (!data.onboarding_complete) {
+        navigate('/onboarding');
+      }
     };
 
     fetchProfile();
   }, []);
 
+  if (!profile) {
+    return <div className="text-sm text-textSecondary p-6">Loading...</div>;
+  }
+
   return (
-    <div className="flex min-h-screen bg-background text-textPrimary">
-      {/* Sidebar */}
+    <div className="flex">
       <Sidebar />
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col">
-        <Topbar profile={profile} />
-
-        <main className="flex-1 p-6">
-          {children}
-        </main>
-      </div>
+      <main className="flex-1">
+        <Topbar username={profile?.username} />
+        <div className="p-4">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }

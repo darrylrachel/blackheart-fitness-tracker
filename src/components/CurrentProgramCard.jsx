@@ -84,10 +84,19 @@ export default function CurrentProgramCard() {
           </ul>
           <Button
             onClick={() => {
+              const formattedExercises = program.workout.exercises.map((ex) => ({
+                name: ex.name,
+                sets: Array.from({ length: ex.sets }, () => ({
+                  weight: '',
+                  reps: ex.reps,
+                  notes: ''
+                })),
+              }));
+
               navigate('/workouts/new', {
                 state: {
                   title: program.workout.name,
-                  exercises: program.workout.exercises,
+                  exercises: formattedExercises,
                   fromProgram: true
                 }
               });
@@ -95,6 +104,7 @@ export default function CurrentProgramCard() {
           >
             ▶️ Start Today’s Workout
           </Button>
+
         </>
       ) : (
         <p className="text-sm italic text-gray-400">No exercises found for today.</p>

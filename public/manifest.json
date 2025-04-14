@@ -1,0 +1,35 @@
+{
+  "name": "Blackheart Coach",
+  "short_name": "Coach",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#BFA85D",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+  {
+    "src": "/screenshots/app-preview-1.png",
+    "type": "image/png",
+    "sizes": "1901x927",
+    "form_factor": "wide"
+  },
+  {
+    "src": "/screenshots/app-preview-2.png",
+    "type": "image/png",
+    "sizes": "606x933"
+  }
+]
+
+}

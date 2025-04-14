@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
@@ -17,8 +16,7 @@ export default function WorkoutsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showRandomModal, setShowRandomModal] = useState(false);
-
+  const [showRandomWorkoutModal, setShowRandomWorkoutModal] = useState(false);
 
   useEffect(() => {
     const fetchPrograms = async () => {
@@ -76,24 +74,23 @@ export default function WorkoutsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-textPrimary">Your Workouts</h1>
+    <div className="space-y-6 px-4 max-w-screen-xl mx-auto">
+      <h1 className="text-2xl font-bold text-textPrimary">💪 Workouts</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-        <Button variant="secondary" onClick={() => navigate('/workouts/new')}>
-          📝 Start Blank Workout
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 min-w-0">
+        <Button variant="primary" onClick={() => navigate('/workouts/new')}>
+          ➕ Start Blank Workout
         </Button>
         <Button variant="secondary" onClick={() => setShowModal(true)}>
           🗂️ Pre-Built Programs
         </Button>
         <Button variant="secondary" onClick={() => navigate('/workouts/create')}>
-          🧱 Build Your Own
+          🧱 Build Your Own Program
         </Button>
-        <Button variant="secondary" onClick={() => setShowRandomModal(true)}>
+        <Button variant="secondary" onClick={() => setShowRandomWorkoutModal(true)}>
           🎲 Random Workout
         </Button>
-
-        <Button onClick={() => setShowSearchModal(true)}>
+        <Button variant="secondary" onClick={() => setShowSearchModal(true)}>
           🔍 Search Exercises
         </Button>
       </div>
@@ -163,18 +160,17 @@ export default function WorkoutsPage() {
         />
       )}
 
-      {showRandomModal && (
+      {showRandomWorkoutModal && (
         <RandomWorkoutModal
-          onClose={() => setShowRandomModal(false)}
+          onClose={() => setShowRandomWorkoutModal(false)}
           onUseWorkout={(exercises) => {
-            setShowRandomModal(false);
+            setShowRandomWorkoutModal(false);
             navigate('/workouts/new', {
               state: { exercises }
             });
           }}
         />
       )}
-
     </div>
   );
 }

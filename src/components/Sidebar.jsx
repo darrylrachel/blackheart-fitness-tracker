@@ -1,15 +1,18 @@
 import { NavLink } from "react-router-dom";
 import UserMenu from './UserMenu';
+import MobileDrawer from "./MobileDrawer";
 
 export default function Sidebar() {
   return (
-    <aside className="bg-surface text-Primary w-64 min-h-screen flex flex-col shadow-lg">
-      <div className="text-center p-6 text-2xl font-bold border-b border-slate">
-        <span className="text-brand">Blackheart</span> Coach
+    <aside className="hidden md:flex bg-surface text-Primary w-64 min-h-screen flex-col shadow-lg">
+      <div className="md:flex items-center justify-center h-16 border-b">
+        <h1 className="text-xl font-bold text-textPrimary">Blackheart Coach</h1>
       </div>
 
+
+
       {/* NavLink Items */}
-      <nav className="flex-1 px-4 py-6 space-y-4 text-sm">
+      <nav className="flex-1 px-4 py-6 space-y-4 text-sm ">
         <NavLink
           to="/dashboard"
           className={({ isActive }) => 
@@ -47,12 +50,12 @@ export default function Sidebar() {
         </NavLink>
 
         <NavLink
-          to="/analytics"
+          to="/workouts/history"
           className={({ isActive }) => 
             `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
             }`
           }>
-            Analytics
+            History
         </NavLink>
 
         <NavLink
@@ -84,8 +87,6 @@ export default function Sidebar() {
         
       </nav>
 
-      {/* User Menu */}
-      <UserMenu />
     </aside>
   )
 }

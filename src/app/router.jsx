@@ -1,156 +1,97 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import StartBlankWorkoutPage from "../pages/StartBlankWorkoutPage";
+
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import App from './App';
 import DashboardLayout from '../components/DashboardLayout';
-import WorkoutReviewPage from '../pages/WorkoutReviewPage';
-import ProtectedRoute from '../components/ProtectedRoute';
-import StartWorkoutPage from '../pages/StartWorkoutPage';
+import OnboardingPage from '../pages/OnboardingPage';
 import DashboardPage from '../pages/DashboardPage';
-import NutritionPage from '../pages/NutritionPage';
 import WorkoutsPage from '../pages/WorkoutsPage';
-import SettingsPage from '../pages/SettingsPage';
-import ProfilePage from '../pages/ProfilePage';
-import ProgramPage from '../pages/ProgramPage';
-import SignupPage from '../pages/SignupPage';
-import LoginPage from '../pages/LoginPage';
-import CoachPage from '../pages/CoachPage';
-import AnalyticsPage from "../pages/AnalyticsPage";
-import JournalPage from '../pages/JournalPage';
-import CreateWorkoutProgramPage from "../pages/CreateWorkoutProgramPage";
+import NutritionPage from '../pages/NutritionPage';
+import WorkoutSummaryPage from '../pages/WorkoutSummaryPage';
+import StartBlankWorkoutPage from '../pages/StartBlankWorkoutPage';
 
+const ProtectedRoute = ({ children }) => {
+  // Auth logic if needed
+  return children;
+};
 
-
-const router = createBrowserRouter ([
+const router = createBrowserRouter([
   {
     path: '/',
-    element: <LoginPage />,
+    element: <App />,
   },
   {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/signup',
-    element: <SignupPage />,
+    path: '/onboarding',
+    element: <OnboardingPage />,
   },
   {
     path: '/dashboard',
     element: (
       <ProtectedRoute>
-        <DashboardLayout>
-          <DashboardPage />
-        </DashboardLayout>
+        <DashboardLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        index: true,
+        element: <DashboardPage />,
+      },
+    ],
   },
   {
     path: '/workouts',
     element: (
       <ProtectedRoute>
-        <DashboardLayout>
-          <WorkoutsPage />
-        </DashboardLayout>
+        <DashboardLayout />
       </ProtectedRoute>
     ),
-  },
-  {
-    path: '/workouts/new',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <StartBlankWorkoutPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/workouts/create',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <CreateWorkoutProgramPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/workouts/review',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <WorkoutReviewPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    children: [
+      {
+        index: true,
+        element: <WorkoutsPage />,
+      },
+    ],
   },
   {
     path: '/nutrition',
     element: (
       <ProtectedRoute>
-        <DashboardLayout>
-          <NutritionPage />
-        </DashboardLayout>
+        <DashboardLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        index: true,
+        element: <NutritionPage />,
+      },
+    ],
   },
   {
-    path: '/analytics',
+    path: '/workouts/summary',
     element: (
       <ProtectedRoute>
-        <DashboardLayout>
-          <AnalyticsPage />
-        </DashboardLayout>
+        <DashboardLayout />
       </ProtectedRoute>
-    )
+    ),
+    children: [
+      {
+        index: true,
+        element: <WorkoutSummaryPage />,
+      },
+    ],
   },
   {
-    path: '/coach',
+    path: '/workouts/new',
     element: (
       <ProtectedRoute>
-        <DashboardLayout>
-          <CoachPage />
-        </DashboardLayout>
+        <DashboardLayout />
       </ProtectedRoute>
-    )
-  },
-  {
-    path: '/program',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <ProgramPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: '/journal',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <JournalPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: '/profile',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <ProfilePage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: '/settings',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <SettingsPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
+    ),
+    children: [
+      {
+        index: true,
+        element: <StartBlankWorkoutPage />,
+      },
+    ],
   },
 ]);
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
+import MobileDrawer from './MobileDrawer';
+import UserMenu from './UserMenu';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -35,16 +37,21 @@ export default function Topbar() {
   }
 
   return (
-    <header className='bg-surface border-b border-border px-6 py-4 flex items-center justify-between shadow-sm'>
-      <h1 className="text-xl font-bold text-textPrimary">
-        {username ? `Welcome, ${username}` : 'Dashboard'}
-      </h1>
-
-      <div className='flex items-center gap-4'>
-        <Button variant='danger' onClick={handleLogout}>
-          Logout
-        </Button>
+    <header className='bg-surface border-b border-border px-4 py-3 flex items-center justify-between shadow-sm'>
+      <div className="flex items-center gap-3">
+        <div className="md:hidden">
+          <MobileDrawer />
+        </div>
+        <h1 className="text-base sm:text-lg font-semibold text-textPrimary">
+          {username ? `Welcome, ${username}` : 'Dashboard'}
+        </h1>
       </div>
+
+
+      <div className="md:block hidden">
+        <UserMenu />
+      </div>
+
     </header>
   );
 }

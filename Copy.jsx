@@ -1,31 +1,3 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabase';
-import { Dumbbell, Flame } from 'lucide-react';
-import Button from '../components/Button';
-import StatCard from '../components/StatCard';
-import GoalDonut from '../components/GoalDonut';
-import MacroDonut from '../components/MacroDonut';
-import ProgressCalendar from '../components/ProgressCalendar';
-import WorkoutOverview from '../components/WorkoutOverview';
-import {
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid,
-   Tooltip, 
-   ResponsiveContainer
-} from 'recharts';
-import { format, parseISO } from 'date-fns';
-
-function getLocalDate() {
-  const local = new Date();
-  local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
-  return local.toISOString().split('T')[0];
-}
-
-
-
 export default function DashboardPage() {
 
   const [caloriesToday, setCaloriesToday] = useState(0);
@@ -44,19 +16,12 @@ export default function DashboardPage() {
   const today = getLocalDate();
 
   useEffect(() => {
-
-    
-    
     const fetchProfileAndData = async () => {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData?.user;
       if (!user) return;
 
-      
-      
-
       // Get profile
-      console.log("🔐 Logged in user:", user);
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -159,8 +124,7 @@ export default function DashboardPage() {
     };
 
     fetchProfileAndData();
-    console.log("👀 Profile check:", profile)
-  }, [profile]);
+  }, []);
 
   const handleEdit = (field) => {
     setEditingField(field);
@@ -207,32 +171,6 @@ export default function DashboardPage() {
       console.error('Error saving metric', error);
     }
   };
-
-  const getProfile = async () => {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        const user = session?.user;
-        console.log("🪪 Session:", session);
-        console.log("👤 User:", user);
-
-        if (!user) return;
-
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (profileData) {
-          setProfile(profileData);
-        } else {
-          console.log("🚫 No profile found.");
-        }
-      };
-
-      getProfile();
 
   if (!profile) {
     return <div className="text-sm text-textSecondary p-4">Loading dashboard...</div>;

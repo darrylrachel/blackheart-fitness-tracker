@@ -2,6 +2,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 
 export default function WorkoutSummaryPage() {
   const location = useLocation();
@@ -49,6 +50,7 @@ export default function WorkoutSummaryPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallback='workouts'/>
       <h1 className="text-2xl font-bold text-textPrimary">📋 Workout Summary</h1>
       <p className="text-sm text-textSecondary">Review your workout before saving</p>
 

@@ -41,6 +41,15 @@ export default function Sidebar() {
         </NavLink>
 
         <NavLink
+          to="/calculator"
+          className={({ isActive }) => 
+            `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'
+            }`
+          }>
+            Calculator
+        </NavLink>
+
+        <NavLink
           to="/journal"
           className={({ isActive }) => 
             `block px-4 py-2 rounded hover:bg-primary/20 transition ${isActive ? 'bg-accent text-white' : 'text-textSecondary'

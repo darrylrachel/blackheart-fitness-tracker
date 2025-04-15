@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
 import { Dumbbell, Flame } from 'lucide-react';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 
 export default function ProgressPage() {
 
@@ -13,6 +14,7 @@ export default function ProgressPage() {
     <>
       {/* Journal Entry */}
     <div className="sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded shadow space-y-4">
+      <BackButton fallback='/dashboard' />
       <h3 className="text-lg font-semibold text-textPrimary">Quick Journal</h3>
       <textarea
         rows={4}

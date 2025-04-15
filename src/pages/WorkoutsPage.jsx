@@ -7,6 +7,7 @@ import WorkoutHistoryChart from '../components/WorkoutHistoryChart';
 import WorkoutsPerWeekChart from '../components/WorkoutsPerWeekChart';
 import ExerciseSearchModal from '../components/ExerciseSearchModal';
 import RandomWorkoutModal from '../components/RandomWorkoutModal';
+import BackButton from '../components/BackButton';
 
 export default function WorkoutsPage() {
   const navigate = useNavigate();
@@ -75,6 +76,7 @@ export default function WorkoutsPage() {
 
   return (
     <div className="space-y-6 px-4 max-w-screen-xl mx-auto">
+      <BackButton fallback='/dashboard' />
       <h1 className="text-2xl font-bold text-textPrimary">💪 Workouts</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 min-w-0">

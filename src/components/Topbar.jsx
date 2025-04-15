@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import MobileDrawer from './MobileDrawer';
 import UserMenu from './UserMenu';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 export default function Topbar() {
   const navigate = useNavigate();
   const [username, setUsername] = useState(null);
+  const { profile } = useUserProfile();
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -43,7 +45,7 @@ export default function Topbar() {
           <MobileDrawer />
         </div>
         <h1 className="text-base sm:text-lg font-semibold text-textPrimary">
-          {username ? `Welcome, ${username}` : 'Dashboard'}
+          {profile?.username ? `Welcome, ${profile.username}` : 'Dashboard'}
         </h1>
       </div>
 

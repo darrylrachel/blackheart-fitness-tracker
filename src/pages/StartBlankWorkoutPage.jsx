@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import ExerciseCard from '../components/ExerciseCardWithCoachTip';
+import BackButton from '../components/BackButton';
 
 export default function StartBlankWorkoutPage() {
   const location = useLocation();
@@ -33,6 +34,7 @@ export default function StartBlankWorkoutPage() {
 
   return (
     <div className="space-y-6 px-4 max-w-screen-sm mx-auto">
+      <BackButton fallback="/workouts" />
       <h1 className="text-2xl font-bold text-textPrimary">📝 Build Your Workout</h1>
 
       <input

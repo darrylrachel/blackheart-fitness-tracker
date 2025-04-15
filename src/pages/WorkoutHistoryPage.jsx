@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 
 export default function WorkoutHistoryPage() {
   const [workouts, setWorkouts] = useState([]);
@@ -31,6 +32,7 @@ export default function WorkoutHistoryPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallback='/workouts' />
       <h1 className="text-2xl font-bold text-textPrimary">📜 Workout History</h1>
       <p className="text-sm text-textSecondary">All workouts you've logged will appear below.</p>
 

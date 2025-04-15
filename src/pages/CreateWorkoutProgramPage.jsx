@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 
 export default function CreateWorkoutProgramPage() {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ export default function CreateWorkoutProgramPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallback='/workouts' />
       <h1 className="text-2xl font-bold text-textPrimary">🛠️ Build Your Own Program</h1>
 
       <div className="grid gap-4">

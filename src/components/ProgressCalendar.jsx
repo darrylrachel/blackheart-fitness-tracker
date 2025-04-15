@@ -7,15 +7,22 @@ export default function ProgressCalendar({ history, dailyGoal = 2200 }) {
   const month = today.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+  function getLocalDate(date) {
+    const local = new Date(date);
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return local.toISOString().split("T")[0];
+  }
+
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const date = new Date(year, month, i + 1);
-    const key = date.toISOString().split("T")[0];
+    const key = getLocalDate(date);
     const calories = history?.[key] || 0;
 
     let status = 'none';
     const percent = (calories / dailyGoal) * 100;
+    if (calories > 0) status = 'partial';
     if (percent >= 100) status = 'full';
-    else if (percent >= 50) status = 'partial';
+
 
     return {
       date: key,

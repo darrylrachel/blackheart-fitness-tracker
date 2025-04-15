@@ -3,6 +3,7 @@ import GoalDonut from '../components/GoalDonut';
 import Button from '../components/Button';
 import { supabase } from '../utils/supabase';
 import { Flame, Drumstick, EggFried, Leaf } from 'lucide-react';
+import BackButton from '../components/BackButton';
 
 function getLocalDate() {
   const local = new Date();
@@ -19,18 +20,25 @@ export default function NutritionPage() {
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState('Breakfast'); // default meal
+  const [goals, setGoals] = useState({
+    calories: 2000,
+    protein: 150,
+    carbs: 250,
+    fats: 80,
+  });
 
   const totals = log.reduce(
     (acc, food) => {
       const qty = parseFloat(food.quantity) || 1;
-      acc.calories += (food.nf_calories || 0) * qty;
-      acc.protein += (food.nf_protein || 0) * qty;
-      acc.carbs += (food.nf_total_carbohydrate || 0) * qty;
-      acc.fats += (food.nf_total_fat || 0) * qty;
+      acc.calories += (food.calories || 0);
+      acc.protein += (food.protein || 0);
+      acc.carbs += (food.carbs || 0);
+      acc.fats += (food.fats || 0);
       return acc;
     },
     { calories: 0, protein: 0, carbs: 0, fats: 0 }
   );
+
 
   function toTitleCase(str) {
     return str
@@ -115,6 +123,33 @@ export default function NutritionPage() {
     };
 
     fetchLoggedMeals();
+
+    const fetchProfileGoals = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+
+      if(!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('macro_goal_protein, macro_goal_carbs, macro_goal_fats, calorie_goal')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Failed to fetch profile goals:', error);
+      } else if (data) {
+        setGoals({
+          calories: data.calorie_goal || 2000,
+          protein: data.macro_goal_protein || 150,
+          carbs: data.macro_goal_carbs || 250,
+          fats: data.macro_goal_fats || 80,
+        });
+      }
+    };
+
+    fetchProfileGoals();
+
   }, []);
 
 
@@ -122,14 +157,16 @@ export default function NutritionPage() {
 
   return (
     <div className='space-y-8'>
+      <BackButton fallback='/dashboard' />
       <h1 className='text-2xl font-bold text-textPrimary'>Nutrition Overview</h1>
+      
 
       {/* Donut charts for macro goals */}
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
-        <GoalDonut label="Calories" value={Math.round(totals.calories)} total={2200} color="#6366f1" />
-        <GoalDonut label="Protein" value={Math.round(totals.protein)} total={150} color="#10b981" />
-        <GoalDonut label="Carbs" value={Math.round(totals.carbs)} total={250} color="#f59e0b" />
-        <GoalDonut label="Fats" value={Math.round(totals.fats)} total={80} color="#ef4444" />
+        <GoalDonut label="Calories" value={Math.round(totals.calories)} total={goals.calories} color="#6366f1" />
+        <GoalDonut label="Protein" value={Math.round(totals.protein)} total={goals.protein} color="#10b981" />
+        <GoalDonut label="Carbs" value={Math.round(totals.carbs)} total={goals.carbs} color="#f59e0b" />
+        <GoalDonut label="Fats" value={Math.round(totals.fats)} total={goals.fats} color="#ef4444" />
 
       </div>
 
@@ -227,21 +264,22 @@ export default function NutritionPage() {
             const totals = items.reduce(
               (acc, food) => {
                 const qty = parseFloat(food.quantity) || 1;
-                acc.calories += (food.nf_calories || 0) * qty;
-                acc.protein += (food.nf_protein || 0) * qty;
-                acc.carbs += (food.nf_total_carbohydrate || 0) * qty;
-                acc.fats += (food.nf_total_fat || 0) * qty;
+                acc.calories += (food.calories || 0);
+                acc.protein += (food.protein || 0);
+                acc.carbs += (food.carbs || 0);
+                acc.fats += (food.fats || 0);
                 return acc;
               },
               { calories: 0, protein: 0, carbs: 0, fats: 0 }
             );
+
 
             return (
               <div key={meal} className="space-y-2 mb-6">
                 <h3 className="font-semibold text-md text-textPrimary">{meal}</h3>
                 {items.map((item, i) => (
                   <div key={i} className="text-sm text-textSecondary">
-                    ✅ {item.food_name} — {Math.round(item.nf_calories)} cal
+                    ✅ {item.food_name} — {Math.round(item.calories)} cal
                   </div>
                 ))}
 

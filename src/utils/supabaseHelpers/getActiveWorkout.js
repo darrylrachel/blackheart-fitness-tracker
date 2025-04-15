@@ -9,7 +9,7 @@ export async function getActiveWorkout() {
 
   const { data: userProgram, error: programError } = await supabase
     .from("user_programs")
-    .select("current_day_index, program_id")
+    .select(`current_day_index, program_id`)
     .eq("user_id", user.id)
     .eq("is_active", true)
     .single();

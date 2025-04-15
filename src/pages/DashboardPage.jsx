@@ -1,388 +1,114 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../utils/supabase';
-import { Dumbbell, Flame } from 'lucide-react';
-import Button from '../components/Button';
-import StatCard from '../components/StatCard';
-import GoalDonut from '../components/GoalDonut';
-import MacroDonut from '../components/MacroDonut';
-import ProgressCalendar from '../components/ProgressCalendar';
-import WorkoutOverview from '../components/WorkoutOverview';
-import {
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid,
-   Tooltip, 
-   ResponsiveContainer
-} from 'recharts';
-import { format, parseISO } from 'date-fns';
-
-function getLocalDate() {
-  const local = new Date();
-  local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
-  return local.toISOString().split('T')[0];
-}
-
-
+import { Droplet, Smile, Dumbbell } from 'lucide-react';
+import BottomTabLayout from '../layouts/BottomTabLayout';
 
 export default function DashboardPage() {
-
-  const [caloriesToday, setCaloriesToday] = useState(0);
-  const [workoutsThisWeek, setWorkoutsThisWeek] = useState(0);
-  const [macrosToday, setMacrosToday] = useState({ protein: 0, carbs: 0, fats: 0 });
-  const [nutritionHistory, setNutritionHistory] = useState([]);
-  const [metrics, setMetrics] = useState({ weight: null, water: null, mood: null });
-  const [editingField, setEditingField] = useState(null);
-  const [inputValue, setInputValue] = useState('');
-  const [profile, setProfile] = useState(null);
-  const [trendHistory, setTrendHistory] = useState([]);
-
-  
-
-
-  const today = getLocalDate();
+  const { user, profile, loading } = useAuth();
+  const [metrics, setMetrics] = useState({ weight: '', water: '', mood: '' });
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!loading && user) {
+      fetchMetrics();
+    }
+  }, [loading, user]);
 
-    
-    
-    const fetchProfileAndData = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) return;
-
-      
-      
-
-      // Get profile
-      console.log("🔐 Logged in user:", user);
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (!profileData) return;
-      setProfile(profileData);
-
-      // Fetch daily metrics
-      const { data: metricsData } = await supabase
-        .from('daily_metrics')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .maybeSingle();
-
-      if (metricsData) {
-        setMetrics({
-          weight: metricsData.weight,
-          water: metricsData.water,
-          mood: metricsData.mood,
-        });
-      }
-
-      const { data: metricHistory } = await supabase
+  const fetchMetrics = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
       .from('daily_metrics')
-      .select('date, weight, water')
-      .eq('user_id', user.id)
-      .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-
-      function getLocalDate(date) {
-        const local = new Date(date);
-        local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
-        return local.toISOString().split('T')[0];
-      }
-
-      const trends = metricHistory?.reduce((acc, entry) => {
-        const dateKey = getLocalDate(entry.date);
-        acc[dateKey] = {
-          date: dateKey, // include formatted date in object for chart
-          weight: entry.weight ?? null,
-          water: entry.water ?? null,
-        };
-        return acc;
-      }, {}) ?? {};
-
-      setTrendHistory(Object.values(trends)); // convert object to array for chart
-
-      // Fetch calories + macros
-      const { data: meals } = await supabase
-        .from('nutrition_logs')
-        .select('calories, protein, carbs, fats, quantity')
-        .eq('user_id', user.id)
-        .eq('date', today);
-
-      const totals = meals?.reduce(
-        (acc, item) => {
-          const qty = parseFloat(item.quantity) || 1;
-          acc.calories += (item.calories || 0) * qty;
-          acc.protein += (item.protein || 0) * qty;
-          acc.carbs += (item.carbs || 0) * qty;
-          acc.fats += (item.fats || 0) * qty;
-          return acc;
-        },
-        { calories: 0, protein: 0, carbs: 0, fats: 0 }
-      );
-
-      setCaloriesToday(Math.round(totals.calories));
-      setMacrosToday({
-        protein: Math.round(totals.protein),
-        carbs: Math.round(totals.carbs),
-        fats: Math.round(totals.fats),
-      });
-
-      // Fetch 30-day nutrition history
-      const { data: history } = await supabase
-        .from('nutrition_logs')
-        .select('date, calories, quantity')
-        .eq('user_id', user.id)
-        .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-      function getLocalDate(date) {
-        const local = new Date(date);
-        local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
-        return local.toISOString().split("T")[0];
-      }
-
-      const grouped = {};
-      history?.forEach((entry) => {
-        const dateKey = getLocalDate(entry.date);
-        const qty = parseFloat(entry.quantity) || 1;
-        const cals = (entry.calories || 0) * qty;
-        if (!grouped[dateKey]) grouped[dateKey] = 0;
-        grouped[dateKey] += cals;
-      });
-
-      setNutritionHistory(grouped);
-    };
-
-    fetchProfileAndData();
-    console.log("👀 Profile check:", profile)
-  }, [profile]);
-
-  const handleEdit = (field) => {
-    setEditingField(field);
-    setInputValue(metrics[field] || '');
-  };
-
-  const saveMetric = async (value = inputValue) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData?.user;
-    if (!user) return;
-
-    const update = {
-      weight: editingField === 'weight' ? value : metrics.weight ?? null,
-      water: editingField === 'water' ? value : metrics.water ?? null,
-      mood: editingField === 'mood' ? value : metrics.mood ?? null,
-      weight_unit: profile?.weight_unit ?? 'lbs',
-      water_unit: profile?.water_unit ?? 'oz',
-    };
-
-    const { data: existing } = await supabase
-      .from('daily_metrics')
-      .select('id')
+      .select('weight, water, mood')
       .eq('user_id', user.id)
       .eq('date', today)
-      .maybeSingle();
+      .single();
 
-    let error;
-    if (existing) {
-      ({ error } = await supabase
-        .from('daily_metrics')
-        .update(update)
-        .eq('id', existing.id));
-    } else {
-      ({ error } = await supabase
-        .from('daily_metrics')
-        .insert([{ ...update, user_id: user.id, date: today }]));
-    }
-
-    if (!error) {
-      setMetrics((prev) => ({ ...prev, [editingField]: value }));
-      setEditingField(null);
-      setInputValue('');
-    } else {
-      console.error('Error saving metric', error);
+    if (data && !error) {
+      setMetrics(data);
     }
   };
 
-  const getProfile = async () => {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        const user = session?.user;
-        console.log("🪪 Session:", session);
-        console.log("👤 User:", user);
-
-        if (!user) return;
-
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (profileData) {
-          setProfile(profileData);
-        } else {
-          console.log("🚫 No profile found.");
-        }
-      };
-
-      getProfile();
-
-  if (!profile) {
-    return <div className="text-sm text-textSecondary p-4">Loading dashboard...</div>;
-  }
-
+  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
 
   return (
-    <div className="space-y-8 px-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          title="Weight"
-          value={
-            profile?.current_weight
-              ? `${profile.current_weight} ${profile?.weight_unit || 'lbs'}`
-              : '—'
-          }
-          icon={<Dumbbell size={24} color='#ffffff'  />}
-          iconBg="bg-gray-800"
-          onClick={() => handleEdit('weight')}
-          isEditing={editingField === 'weight'}
-          inputElement={
-            editingField === 'weight' && (
-              <div className="flex gap-2 items-center">
-                <input
-                  type="number"
-                  placeholder="Weight"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="p-2 border rounded bg-background w-24 text-sm"
-                />
-                <span className="text-sm text-gray-600">{profile?.weight_unit || 'lbs'}</span>
-                <Button size="sm" onClick={() => saveMetric()}>Save</Button>
-              </div>
-            )
-          }
-        />
+    <BottomTabLayout>
+      <div className="pb-24">
+        <h1 className="text-xl font-bold text-textPrimary mb-4">
+          Welcome back, {profile?.username || 'Athlete'} 💪
+        </h1>
 
-        <StatCard
-          title="Water"
-          value={
-            metrics.water
-              ? `${metrics.water} ${profile?.water_unit || 'oz'}`
-              : '—'
-          }
-          icon={<Flame size={24} color='#ffffff' />}
-          iconBg="bg-blue-500"
-          onClick={() => handleEdit('water')}
-          isEditing={editingField === 'water'}
-          inputElement={
-            editingField === 'water' && (
-              <div className="flex gap-2 items-center">
-                <input
-                  type="number"
-                  placeholder="Water"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="p-2 border rounded bg-background w-24 text-sm"
-                />
-                <span className="text-sm text-gray-600">{profile?.water_unit || 'oz'}</span>
-                <Button size="sm" onClick={() => saveMetric()}>Save</Button>
-              </div>
-            )
-          }
-        />
-
-        <StatCard
-          title="Mood"
-          value={metrics.mood || '—'}
-          icon={<span className="text-xl">{metrics.mood || '🙂'}</span>}
-          iconBg="bg-yellow-400"
-          onClick={() => handleEdit('mood')}
-          isEditing={editingField === 'mood'}
-          inputElement={
-            editingField === 'mood' && (
-              <div className="flex gap-2 text-2xl">
-                {['😐', '🙂', '😄', '😤', '🥱'].map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => {
-                      setInputValue(emoji);
-                      saveMetric(emoji);
-                    }}
-                    className={`p-1 rounded ${inputValue === emoji ? 'ring-2 ring-primary' : ''}`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            )
-          }
-        />
-
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <GoalDonut
-          label="Calories Today"
-          value={Math.round(caloriesToday)}
-          total={profile?.calorie_goal ?? 2000}
-          color="#e74c3c"
-        />
-        <MacroDonut
-          data={macrosToday}
-          totals={{
-            protein: profile?.macro_goal_protein ?? 150,
-            carbs: profile?.macro_goal_carbs ?? 200,
-            fats: profile?.macro_goal_fats ?? 70,
-          }}
-        />
-        <ProgressCalendar history={nutritionHistory} dailyGoal={profile?.calorie_goal ?? 2000} />
-        </div> {/* close existing grid */}
-
-        {/* Add WorkoutOverview separately */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-surface p-4 rounded shadow space-y-2">
-            <WorkoutOverview />
+        <div className="grid gap-4 mb-6">
+          {/* Daily Metrics */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl shadow-md p-4 text-center">
+              <p className="text-xs text-gray-500">Weight</p>
+              <p className="text-lg font-bold text-textPrimary">{metrics.weight || '--'} lbs</p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-md p-4 text-center">
+              <p className="text-xs text-gray-500">Water</p>
+              <p className="text-lg font-bold text-textPrimary">{metrics.water || '--'} oz</p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-md p-4 text-center">
+              <p className="text-xs text-gray-500">Mood</p>
+              <p className="text-lg font-bold text-textPrimary">{metrics.mood || '--'}</p>
+            </div>
           </div>
 
-          <div className="bg-surface p-4 rounded shadow space-y-4">
-            <h3 className="text-base font-semibold text-textPrimary">📉 Weight Trend (Last 30 Days)</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trendHistory}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(str) => format(parseISO(str), "MMM d")}
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
-                />
-                <YAxis
-                  domain={['dataMin - 5', 'dataMax + 5']}
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
-                  width={40}
-                />
-                <Tooltip
-                  labelFormatter={(label) => format(parseISO(label), "MMM d, yyyy")}
-                  formatter={(value) => [`${value} ${profile?.weight_unit ?? 'lbs'}`, 'Weight']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="weight"
-                  stroke="#60a5fa"
-                  strokeWidth={2.5}
-                  dot={false}
-                  name="Weight"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          {/* Next Workout */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-textPrimary text-lg">Today's Workout</h2>
+              <Dumbbell size={20} className="text-[#BFA85D]" />
+            </div>
+            <p className="text-sm text-gray-600 mt-2">You haven't selected a workout program yet.</p>
+            <button className="mt-3 w-full py-2 rounded-xl bg-[#BFA85D] text-white font-medium shadow hover:opacity-90">
+              Choose a Program
+            </button>
+          </div>
+
+          {/* Nutrition Summary */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h2 className="font-semibold text-textPrimary text-lg mb-2">Today's Nutrition</h2>
+            <p className="text-sm text-gray-600">Calories and macros not yet logged.</p>
+          </div>
+
+          {/* Calendar Preview */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h2 className="font-semibold text-textPrimary text-lg mb-2">Progress Calendar</h2>
+            <p className="text-sm text-gray-600">Coming soon...</p>
+          </div>
+
+          {/* Quick Access */}
+          <div>
+            <h2 className="text-lg font-semibold text-textPrimary mb-2">Quick Access</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <button
+                onClick={() => navigate('/coach')}
+                className="bg-white rounded-2xl shadow p-4 text-center"
+              >
+                <span className="text-2xl">🤖</span>
+                <p className="text-sm mt-2 font-medium text-textPrimary">Smart Coach</p>
+              </button>
+              <button
+                onClick={() => navigate('/workouts/history')}
+                className="bg-white rounded-2xl shadow p-4 text-center"
+              >
+                <span className="text-2xl">📈</span>
+                <p className="text-sm mt-2 font-medium text-textPrimary">Workout History</p>
+              </button>
+              <button
+                onClick={() => navigate('/journal')}
+                className="bg-white rounded-2xl shadow p-4 text-center"
+              >
+                <span className="text-2xl">📓</span>
+                <p className="text-sm mt-2 font-medium text-textPrimary">Journal</p>
+              </button>
+            </div>
           </div>
         </div>
-
       </div>
+    </BottomTabLayout>
   );
 }

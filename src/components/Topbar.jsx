@@ -5,6 +5,7 @@ import Button from './Button';
 import MobileDrawer from './MobileDrawer';
 import UserMenu from './UserMenu';
 import { useUserProfile } from '../hooks/useUserProfile';
+import Logo from '../assets/Logo.png';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -39,14 +40,14 @@ export default function Topbar() {
   }
 
   return (
-    <header className='bg-surface border-b border-border px-4 py-3 flex items-center justify-between shadow-sm'>
+    <header className='bg-surface border-b border-border px-4 py-3 flex items-center justify-center shadow-sm'>
       <div className="flex items-center gap-3">
-        <div className="md:hidden">
+        {/* <div className="md:hidden">
           <MobileDrawer />
-        </div>
-        <h1 className="text-base sm:text-lg font-semibold text-textPrimary">
-          {profile?.username ? `Welcome, ${profile.username}` : 'Dashboard'}
-        </h1>
+        </div> */}
+        <div className="flex justify-center mb-4">
+                <img src={Logo} alt="App Logo" className="h-12 w-auto" />
+              </div>
       </div>
 
 

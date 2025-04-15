@@ -1,165 +1,132 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
-import Button from '../components/Button';
+import Logo from '../assets/Logo.png';
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const [form, setForm] = useState({
+    gender: '',
+    weight: '',
+    height: '',
+    activity: '',
+    fitness: '',
+    goal: '',
+    targetWeight: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [username, setUsername] = useState('');
-  const [gender, setGender] = useState('male');
-  const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
-  const [weightUnit, setWeightUnit] = useState('lbs');
-  const [waterUnit, setWaterUnit] = useState('oz');
-  const [activityLevel, setActivityLevel] = useState('1.55');
-  const [fitnessLevel, setFitnessLevel] = useState('newbie');
-  const [goalType, setGoalType] = useState('maintenance');
-  const [targetWeight, setTargetWeight] = useState('');
-
-  const calculateMacros = (weightLbs) => {
-    const weightKg = weightUnit === 'kg' ? weightLbs : weightLbs * 0.4536;
-    const heightCm = weightUnit === 'kg' ? height : height * 2.54;
-
-    // Mifflin-St Jeor BMR
-    let bmr =
-      gender === 'male'
-        ? 10 * weightKg + 6.25 * heightCm - 5 * 25 + 5 // assuming avg age 25
-        : 10 * weightKg + 6.25 * heightCm - 5 * 25 - 161;
-
-    const tdee = bmr * parseFloat(activityLevel);
-
-    // Adjust TDEE for goal
-    let adjustedCalories = tdee;
-    if (goalType === 'fat_loss') adjustedCalories *= 0.8;
-    if (goalType === 'muscle_gain') adjustedCalories *= 1.15;
-
-    // Macro distribution based on fitness level
-    let proteinPerLb = fitnessLevel === 'advanced' ? 1.2 : fitnessLevel === 'intermediate' ? 1 : 0.8;
-    const protein = Math.round(proteinPerLb * weightLbs);
-    const fats = Math.round((adjustedCalories * 0.25) / 9);
-    const remainingCalories = adjustedCalories - (protein * 4 + fats * 9);
-    const carbs = Math.round(remainingCalories / 4);
-
-    return {
-      calories: Math.round(adjustedCalories),
-      protein,
-      carbs,
-      fats,
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData?.user;
-    if (!user) return alert('Not logged in');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const weightNum = parseFloat(weight);
-    if (isNaN(weightNum) || isNaN(height)) return alert('Invalid weight or height');
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    const macros = calculateMacros(weightNum);
-
-    const updates = {
+    const { error } = await supabase.from('profiles').upsert({
       id: user.id,
-      username,
-      gender,
-      weight_unit: weightUnit,
-      water_unit: waterUnit,
-      goal_type: goalType,
-      current_weight: weightNum,
-      target_weight: targetWeight ? Number(targetWeight) : null,
-      height: parseFloat(height),
-      activity_level: activityLevel,
-      fitness_level: fitnessLevel,
-      macro_goal_protein: macros.protein,
-      macro_goal_carbs: macros.carbs,
-      macro_goal_fats: macros.fats,
-      calorie_goal: macros.calories,
-      onboarding_complete: true,
-    };
+      ...form,
+    });
 
-    const { error } = await supabase.from('profiles').upsert(updates);
     if (error) {
-      console.error('Error saving onboarding:', error);
-      alert('Something went wrong');
+      setError(error.message);
     } else {
       navigate('/dashboard');
     }
+    setLoading(false);
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-textPrimary">Welcome to Blackheart Coach 🧠</h1>
-      <p className="text-sm text-textSecondary">Let’s personalize your fitness journey.</p>
-
-      <div className="space-y-4">
-        <input
-          type="text"
-          placeholder="Your name"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
+    <div className="min-h-screen bg-gradient-to-b from-white/80 to-white/40 backdrop-blur-sm flex items-center justify-center px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white/80 rounded-2xl shadow-xl p-6 space-y-4"
+      >
+        <div className="flex justify-center">
+          <img src={Logo} alt="App Logo" className="h-24 w-auto" />
+        </div>
+        <h1 className="text-2xl font-bold text-center text-textPrimary mb-2">
+          🎯 Let's personalize your experience
+        </h1>
 
         <div className="grid grid-cols-2 gap-4">
-          <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full border p-2 rounded">
+          <select name="gender" value={form.gender} onChange={handleChange} required className="rounded-xl border-gray-300 px-3 py-2">
+            <option value="">Gender</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-          <select value={weightUnit} onChange={(e) => setWeightUnit(e.target.value)} className="w-full border p-2 rounded">
-            <option value="lbs">Pounds (lbs)</option>
-            <option value="kg">Kilograms (kg)</option>
+
+          <select name="activity" value={form.activity} onChange={handleChange} required className="rounded-xl border-gray-300 px-3 py-2">
+            <option value="">Activity Level</option>
+            <option value="sedentary">Sedentary</option>
+            <option value="light">Lightly Active</option>
+            <option value="moderate">Moderately Active</option>
+            <option value="active">Very Active</option>
+          </select>
+
+          <input
+            type="number"
+            name="weight"
+            placeholder="Current Weight (lbs)"
+            value={form.weight}
+            onChange={handleChange}
+            required
+            className="col-span-2 rounded-xl border-gray-300 px-3 py-2"
+          />
+
+          <input
+            type="number"
+            name="targetWeight"
+            placeholder="Target Weight (lbs)"
+            value={form.targetWeight}
+            onChange={handleChange}
+            required
+            className="col-span-2 rounded-xl border-gray-300 px-3 py-2"
+          />
+
+          <input
+            type="number"
+            name="height"
+            placeholder="Height (inches)"
+            value={form.height}
+            onChange={handleChange}
+            required
+            className="col-span-2 rounded-xl border-gray-300 px-3 py-2"
+          />
+
+          <select name="fitness" value={form.fitness} onChange={handleChange} required className="col-span-2 rounded-xl border-gray-300 px-3 py-2">
+            <option value="">Fitness Level</option>
+            <option value="newbie">Newbie (0-1 year)</option>
+            <option value="intermediate">Intermediate (1-3 years)</option>
+            <option value="advanced">Advanced (3+ years)</option>
+          </select>
+
+          <select name="goal" value={form.goal} onChange={handleChange} required className="col-span-2 rounded-xl border-gray-300 px-3 py-2">
+            <option value="">Main Goal</option>
+            <option value="fat_loss">Fat Loss</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="muscle_gain">Muscle Gain</option>
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            type="number"
-            placeholder="Current Weight"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="number"
-            placeholder="Height (in/cm)"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-        <select value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} className="w-full border p-2 rounded">
-          <option value="1.2">Sedentary (little or no exercise)</option>
-          <option value="1.375">Lightly active (1–3 days/week)</option>
-          <option value="1.55">Moderately active (3–5 days/week)</option>
-          <option value="1.725">Very active (6–7 days/week)</option>
-          <option value="1.9">Extremely active (daily + physical job)</option>
-        </select>
-
-        <select value={fitnessLevel} onChange={(e) => setFitnessLevel(e.target.value)} className="w-full border p-2 rounded">
-          <option value="newbie">Newbie (0–1 year)</option>
-          <option value="intermediate">Intermediate (1–3 years)</option>
-          <option value="advanced">Advanced (3+ years)</option>
-        </select>
-
-        <select value={goalType} onChange={(e) => setGoalType(e.target.value)} className="w-full border p-2 rounded">
-          <option value="maintenance">Maintenance</option>
-          <option value="fat_loss">Fat Loss</option>
-          <option value="muscle_gain">Muscle Gain</option>
-        </select>
-
-        <input
-          type="number"
-          placeholder="Target Weight (optional)"
-          value={targetWeight}
-          onChange={(e) => setTargetWeight(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-
-        <Button variant="primary" onClick={handleSubmit}>🚀 Finish Setup</Button>
-      </div>
+        <button
+          type="submit"
+          className="w-full py-2 rounded-xl bg-[#BFA85D] text-white font-semibold shadow-md hover:opacity-90 transition"
+          disabled={loading}
+        >
+          {loading ? 'Saving...' : 'Continue'}
+        </button>
+      </form>
     </div>
   );
 }

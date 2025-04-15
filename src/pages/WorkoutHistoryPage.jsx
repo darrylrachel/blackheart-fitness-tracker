@@ -1,77 +1,26 @@
-
-import { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabase';
-import Button from '../components/Button';
-import BackButton from '../components/BackButton';
+import { useNavigate } from 'react-router-dom';
+import BottomTabLayout from '../layouts/BottomTabLayout';
+import { Clock, ArrowLeft } from 'lucide-react';
 
 export default function WorkoutHistoryPage() {
-  const [workouts, setWorkouts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchWorkouts = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('user_workouts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setWorkouts(data);
-      }
-
-      setLoading(false);
-    };
-
-    fetchWorkouts();
-  }, []);
-
+  const navigate = useNavigate();
   return (
-    <div className="space-y-6">
-      <BackButton fallback='/workouts' />
-      <h1 className="text-2xl font-bold text-textPrimary">📜 Workout History</h1>
-      <p className="text-sm text-textSecondary">All workouts you've logged will appear below.</p>
+    <BottomTabLayout>
+      <div className="min-h-[calc(100vh-88px)] pb-10 space-y-6">
+        <button onClick={() => navigate('/dashboard')}>
+            <ArrowLeft size={22} className="text-[#BFA85D]" />
+        </button>
+        <h1 className="text-xl font-bold text-textPrimary mb-2">Workout History</h1>
 
-      {loading ? (
-        <p className="text-sm text-gray-500">Loading...</p>
-      ) : workouts.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">No workouts logged yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {workouts.map((w, i) => (
-            <div key={i} className="border rounded bg-surface p-4 shadow-sm space-y-2">
-              <div className="flex justify-between items-center">
-                <h2 className="font-semibold text-lg">
-                  {w.title || `Workout on ${new Date(w.created_at).toLocaleDateString()}`}
-                </h2>
-                <span className="text-xs text-gray-500">
-                  {new Date(w.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                {w.exercises.map((ex, j) => (
-                  <div key={j} className="border p-2 rounded bg-background">
-                    <strong className="capitalize">{ex.name}</strong>
-                    <ul className="ml-4 list-disc text-xs mt-1">
-                      {ex.sets.map((s, k) => (
-                        <li key={k}>
-                          {s.weight} lbs × {s.reps} reps
-                          {s.notes && <> — <em>{s.notes}</em></>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+        {/* Placeholder for when no workouts are logged */}
+        <div className="bg-white rounded-2xl shadow-md p-6 text-center">
+          <Clock size={32} className="mx-auto text-[#BFA85D] mb-2" />
+          <p className="text-lg font-semibold text-textPrimary">No workouts logged yet</p>
+          <p className="text-sm text-gray-600 mt-1">Your past workouts will appear here once you start tracking them.</p>
         </div>
-      )}
-    </div>
+
+        {/* Future: List of past workouts with dates, summary, and a view button */}
+      </div>
+    </BottomTabLayout>
   );
 }

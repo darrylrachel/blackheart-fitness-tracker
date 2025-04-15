@@ -1,51 +1,53 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabase';
-import { Dumbbell, Flame } from 'lucide-react';
-import Button from '../components/Button';
-import BackButton from '../components/BackButton';
+import { useState } from 'react';
+import BottomTabLayout from '../layouts/BottomTabLayout';
+import { SmilePlus, ArrowLeft } from 'lucide-react';
 
-export default function ProgressPage() {
-
-    const [journalNote, setJournalNote] = useState('');
-  
-
+export default function JournalPage() {
+  const [mood, setMood] = useState('');
+  const [note, setNote] = useState('');
 
   return (
-    <>
-      {/* Journal Entry */}
-    <div className="sm:col-span-1 lg:col-span-2 bg-surface p-4 rounded shadow space-y-4">
-      <BackButton fallback='/dashboard' />
-      <h3 className="text-lg font-semibold text-textPrimary">Quick Journal</h3>
-      <textarea
-        rows={4}
-        value={journalNote}
-        onChange={(e) => setJournalNote(e.target.value)}
-        placeholder="Write something about today..."
-        className="w-full p-3 rounded border border-border bg-background text-sm"
-      />
-      <Button onClick={async () => {
-        const { data: userData } = await supabase.auth.getUser();
-        const user = userData?.user;
-        if (!user) return;
+    <BottomTabLayout>
+      <div className="min-h-[calc(100vh-88px)] pb-10 space-y-6">
+        <h1 className="text-xl font-bold text-textPrimary mb-2">Journal</h1>
 
-        await supabase.from('journal_entries').insert([
-          { user_id: user.id, date: new Date().toISOString(), content: journalNote }
-        ]);
+        {/* Mood Selector */}
+        <div className="bg-white rounded-2xl shadow-md p-4">
+          <h2 className="text-lg font-semibold text-textPrimary mb-2">How are you feeling today?</h2>
+          <div className="flex gap-4 justify-center">
+            {['😃', '🙂', '😐', '😞', '😡'].map((emoji) => (
+              <button
+                key={emoji}
+                onClick={() => setMood(emoji)}
+                className={`text-3xl transition transform ${mood === emoji ? 'scale-125' : 'opacity-60'}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        setJournalNote('');
-      }} variant="primary">
-        💾 Save Journal Entry
-      </Button>
-    </div>
-    </>
-  )
+        {/* Notes Input */}
+        <div className="bg-white rounded-2xl shadow-md p-4">
+          <h2 className="text-lg font-semibold text-textPrimary mb-2">Write a note</h2>
+          <textarea
+            rows={5}
+            placeholder="Today I crushed my workout..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#BFA85D]"
+          ></textarea>
+        </div>
+
+        {/* Save Button */}
+        <div>
+          <button
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#BFA85D] text-white font-semibold shadow hover:opacity-90"
+          >
+            <SmilePlus size={20} /> Save Entry
+          </button>
+        </div>
+      </div>
+    </BottomTabLayout>
+  );
 }
-
-
-
-
-
-
-
-
-

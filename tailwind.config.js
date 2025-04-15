@@ -1,5 +1,8 @@
-/** @type {import('tailwindcss').Config} */
 import typography from '@tailwindcss/typography'
+import safeArea from 'tailwindcss-safe-area';
+
+/** @type {import('tailwindcss').Config} */
+
 export default {
   content: [
     "./index.html",
@@ -19,6 +22,8 @@ export default {
       },
     },
   },
-  plugins: [typography],
-
+  plugins: [
+    safeArea,
+    [typography],
+  ]
 }

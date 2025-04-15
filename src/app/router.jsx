@@ -11,6 +11,12 @@ import WorkoutHistoryPage from '../pages/WorkoutHistoryPage';
 import JournalPage from '../pages/JournalPage';
 import ProfilePage from '../pages/ProfilePage';
 import CoachPage from '../pages/CoachPage';
+import SelectExercisesPage from '../pages/SelectExercisesPage';
+import WorkoutBuilderPage from '../pages/WorkoutBuilderPage';
+import ViewWorkoutPage from '../pages/ViewWorkoutPage';
+import UploadProgressPhotoPage from '../pages/UploadProgressPhotoPage';
+import ProgressPage from '../pages/ProgressPage';
+import EditProfilePage from '../pages/EditProfilePage';
 
 
 
@@ -19,6 +25,9 @@ import DashboardLayout from '../components/DashboardLayout';
 import WorkoutSummaryPage from '../pages/WorkoutSummaryPage';
 import StartBlankWorkoutPage from '../pages/StartBlankWorkoutPage';
 import CreateWorkoutProgramPage from '../pages/CreateWorkoutProgramPage';
+import OneRepMaxPage from '../pages/OneRepMaxPage';
+import SearchFoodPage from '../pages/SearchFoodPage';
+import AddMealPage from '../pages/AddMealPage';
 
 
 
@@ -29,8 +38,13 @@ const router = createBrowserRouter([
     path: '/',
     element: <LoginPage />,
   },
-  
-
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: 'https://blackheartlabs.com/'
+  },
   {
     path: '/onboarding',
     element: (
@@ -50,6 +64,7 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <DashboardPage />,
+        
       },
     ],
   },
@@ -60,14 +75,28 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Dashboard' },
     children: [
       {
         index: true,
-        element: <WorkoutsPage />,
-        
+        element: <WorkoutsPage />
       },
-    ],
+      {
+        path: 'history',
+        element: <WorkoutHistoryPage />
+      },
+      {
+        path: ':id',
+        element: <ViewWorkoutPage />
+      },
+      {
+        path: 'select-exercises',
+        element: <SelectExercisesPage />
+      },
+      {
+        path: 'new',
+        element: <WorkoutBuilderPage />
+      }
+    ]
   },
   {
     path: '/calculator',
@@ -76,15 +105,35 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Dashboard' },
     children: [
       {
         index: true,
         element: <CalculatorPage />,
-        
       },
+      {
+        path: 'one-rep-max',
+        element: <OneRepMaxPage />
+      }
     ],
   },
+  {
+    path: '/progress',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <ProgressPage />,
+      },
+      {
+        path: 'upload',
+        element: <UploadProgressPhotoPage />
+      },
+    ],
+  },  
   {
     path: '/nutrition',
     element: (
@@ -92,28 +141,18 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Dashboard' },
     children: [
       {
         index: true,
         element: <NutritionPage />,
-        
       },
-    ],
-  },
-  {
-    path: '/workouts/history',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-    handle: { title: 'Workouts' },
-    children: [
       {
-        index: true,
-        element: <WorkoutHistoryPage />,
-        
+        path: 'search',
+        element: <SearchFoodPage />,
+      },
+      {
+        path: 'add-meal',
+        element: <AddMealPage />,
       },
     ],
   },
@@ -124,12 +163,10 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Dashboard' },
     children: [
       {
         index: true,
         element: <JournalPage />,
-        
       },
     ],
   },
@@ -140,12 +177,10 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Dashboard' },
     children: [
       {
         index: true,
         element: <CoachPage />,
-        
       },
     ],
   },
@@ -156,12 +191,10 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Workouts' },
     children: [
       {
         index: true,
         element: <CreateWorkoutProgramPage />,
-        
       },
     ],
   },
@@ -172,12 +205,14 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Dashboard' },
     children: [
       {
         index: true,
         element: <ProfilePage />,
-        
+      },
+      {
+        path: 'edit-profile',
+        element: <EditProfilePage />,
       },
     ],
   },
@@ -188,31 +223,14 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    handle: { title: 'Workouts' },
     children: [
       {
         index: true,
         element: <WorkoutSummaryPage />,
-        
       },
     ],
   },
-  {
-    path: '/workouts/new',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-    handle: { title: 'Workouts' },
-    children: [
-      {
-        index: true,
-        element: <StartBlankWorkoutPage />,
-        
-      },
-    ],
-  },
+  
 ]);
 
 

@@ -19,7 +19,7 @@ export default function CalculatorPage() {
           </button>
 
           <button
-            onClick={() => navigate('/calculator/1rm')}
+            onClick={() => navigate('/calculator/one-rep-max')}
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-white shadow text-textPrimary font-medium border border-gray-200"
           >
             <Dumbbell size={20} /> One Rep Max Calculator

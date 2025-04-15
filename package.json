@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/typography": "^0.5.16",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "framer-motion": "^12.6.3",
     "lucide": "^0.487.0",
     "lucide-react": "^0.487.0",

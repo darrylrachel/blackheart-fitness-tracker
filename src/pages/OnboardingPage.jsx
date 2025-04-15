@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import Logo from '../assets/Logo.png';
@@ -9,6 +9,7 @@ export default function OnboardingPage() {
     gender: '',
     weight: '',
     height: '',
+    age: '',
     activity: '',
     fitness: '',
     goal: '',
@@ -17,9 +18,53 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) navigate('/login');
+    };
+    checkAuth();
+  }, [navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+  };
+
+  const calculateMacros = ({ gender, weight, height, age, activity, goal }) => {
+    const w = Number(weight);
+    const h = Number(height);
+    const a = Number(age);
+
+    // Convert to metric
+    const weightKg = w * 0.453592;
+    const heightCm = h * 2.54;
+
+    let bmr = gender === 'female'
+      ? 655 + (9.6 * weightKg) + (1.8 * heightCm) - (4.7 * a)
+      : 66 + (13.7 * weightKg) + (5 * heightCm) - (6.8 * a);
+
+    const activityMultipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+    };
+    const tdee = bmr * (activityMultipliers[activity] || 1.2);
+
+    let calories = tdee;
+    if (goal === 'fat_loss') calories -= 500;
+    if (goal === 'muscle_gain') calories += 300;
+
+    calories = Math.round(calories);
+
+    const protein = Math.round(w * 1);
+    const fats = Math.round((calories * 0.25) / 9);
+    const carbs = Math.round((calories - (protein * 4 + fats * 9)) / 4);
+
+    return { calories, protein, carbs, fats };
   };
 
   const handleSubmit = async (e) => {
@@ -29,18 +74,40 @@ export default function OnboardingPage() {
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from('profiles').upsert({
+    if (!user || userError) {
+      setError('User session not found.');
+      setLoading(false);
+      return;
+    }
+
+    const macros = calculateMacros(form);
+
+    const { error: profileError } = await supabase.from('profiles').upsert({
       id: user.id,
-      ...form,
+      current_weight: form.weight,
+      target_weight: form.targetWeight,
+      gender: form.gender,
+      age: form.age,
+      height: form.height,
+      activity_level: form.activity,
+      fitness_level: form.fitness,
+      goal_type: form.goal,
+      calorie_goal: macros.calories,
+      macro_goal_protein: macros.protein,
+      macro_goal_carbs: macros.carbs,
+      macro_goal_fats: macros.fats,
+      onboarding_complete: true,
     });
 
-    if (error) {
-      setError(error.message);
+    if (profileError) {
+      setError(profileError.message);
     } else {
       navigate('/dashboard');
     }
+
     setLoading(false);
   };
 
@@ -51,7 +118,7 @@ export default function OnboardingPage() {
         className="w-full max-w-md bg-white/80 rounded-2xl shadow-xl p-6 space-y-4"
       >
         <div className="flex justify-center">
-          <img src={Logo} alt="App Logo" className="h-24 w-auto" />
+          <img src={Logo} alt="App Logo" className="h-14 w-auto" />
         </div>
         <h1 className="text-2xl font-bold text-center text-textPrimary mb-2">
           🎯 Let's personalize your experience
@@ -75,7 +142,7 @@ export default function OnboardingPage() {
           <input
             type="number"
             name="weight"
-            placeholder="Current Weight (lbs)"
+            placeholder="Weight (lbs)"
             value={form.weight}
             onChange={handleChange}
             required
@@ -97,6 +164,16 @@ export default function OnboardingPage() {
             name="height"
             placeholder="Height (inches)"
             value={form.height}
+            onChange={handleChange}
+            required
+            className="col-span-2 rounded-xl border-gray-300 px-3 py-2"
+          />
+
+          <input
+            type="number"
+            name="age"
+            placeholder="Age"
+            value={form.age}
             onChange={handleChange}
             required
             className="col-span-2 rounded-xl border-gray-300 px-3 py-2"

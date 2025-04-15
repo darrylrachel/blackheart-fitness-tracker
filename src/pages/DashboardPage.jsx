@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../utils/supabase';
-import { Droplet, Smile, Dumbbell } from 'lucide-react';
+import { Droplet, Smile, Dumbbell, ShoppingCart } from 'lucide-react';
 import BottomTabLayout from '../layouts/BottomTabLayout';
 
 export default function DashboardPage() {
@@ -56,6 +56,22 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* Goal Summary */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h2 className="font-semibold text-textPrimary text-lg mb-1">Your Goal</h2>
+            <p className="text-sm text-gray-600 capitalize">
+              {profile?.goal ? profile.goal.replace('_', ' ') : 'Not set yet'}
+            </p>
+          </div>
+
+          {/* Fitness Level */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h2 className="font-semibold text-textPrimary text-lg mb-1">Fitness Level</h2>
+            <p className="text-sm text-gray-600 capitalize">
+              {profile?.fitness || 'Not set yet'}
+            </p>
+          </div>
+
           {/* Next Workout */}
           <div className="bg-white rounded-2xl shadow-md p-4">
             <div className="flex items-center justify-between">
@@ -104,6 +120,19 @@ export default function DashboardPage() {
               >
                 <span className="text-2xl">📓</span>
                 <p className="text-sm mt-2 font-medium text-textPrimary">Journal</p>
+              </button>
+              <button
+                onClick={() => navigate('/progress')}
+                className="bg-white rounded-2xl shadow p-4 text-center"
+              >
+                <span className="text-2xl">📈 </span>
+                <p className="text-sm mt-2 font-medium text-textPrimary">Progress</p>
+              </button>
+              <button
+                onClick={() => navigate('https://blackheartlabs.com/')}
+                className="bg-white rounded-2xl shadow p-4 text-center"
+              >
+                <p className="text-sm mt-2 font-medium text-textPrimary">Shop</p>
               </button>
             </div>
           </div>
